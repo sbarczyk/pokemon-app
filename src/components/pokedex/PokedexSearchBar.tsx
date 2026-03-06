@@ -6,10 +6,18 @@ type PokedexSearchBarProps = {
   onChangeText: (text: string) => void;
 };
 
-export default function PokedexSearchBar({ value, onChangeText }: PokedexSearchBarProps) {
+export default function PokedexSearchBar({
+  value,
+  onChangeText,
+}: PokedexSearchBarProps) {
   return (
     <View style={styles.searchBox}>
-      <Ionicons name="search" size={18} color="#888" style={styles.searchIcon} />
+      <Ionicons
+        name="search"
+        size={18}
+        color="#888"
+        style={styles.searchIcon}
+      />
       <TextInput
         placeholder="Search a pokemon..."
         style={styles.searchInput}

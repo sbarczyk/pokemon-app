@@ -30,3 +30,7 @@ export type PokemonDetails = {
     };
   }[];
 };
+
+export type PokemonTypesProps = {
+  types: PokemonDetails["types"];
+};

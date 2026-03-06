@@ -2,16 +2,15 @@ import { View, Text, Image, StyleSheet, Pressable } from "react-native";
 import { memo } from "react";
 import { Ionicons } from "@expo/vector-icons";
 
-import { PokemonDetails } from "../types/pokemon";
-import { pokemonTypeColors } from "../theme/pokemonTypes";
+import { pokemonTypeColors } from "../../theme/pokemonTypes";
 
-type PokemonCardProps = {
-  pokemon: PokemonDetails;
-  onPress?: (pokemon: PokemonDetails) => void;
-  isFavorite?: boolean;
-};
+import { PokemonCardProps } from "../../types/pokedex";
 
-function PokemonCard({ pokemon, onPress, isFavorite = false }: PokemonCardProps) {
+function PokemonCard({
+  pokemon,
+  onPress,
+  isFavorite = false,
+}: PokemonCardProps) {
   if (!pokemon || !pokemon.sprites) return null;
 
   const id = pokemon.id;
@@ -29,7 +28,10 @@ function PokemonCard({ pokemon, onPress, isFavorite = false }: PokemonCardProps)
       ) : null}
       <View style={styles.imageBox}>
         {pokemon.sprites?.front_default ? (
-          <Image source={{ uri: pokemon.sprites.front_default }} style={styles.image} />
+          <Image
+            source={{ uri: pokemon.sprites.front_default }}
+            style={styles.image}
+          />
         ) : null}
       </View>
 
@@ -42,7 +44,10 @@ function PokemonCard({ pokemon, onPress, isFavorite = false }: PokemonCardProps)
         {pokemon.types?.map((t) => (
           <View
             key={t.type.name}
-            style={[styles.typeDot, { backgroundColor: pokemonTypeColors[t.type.name] || "#999" }]}
+            style={[
+              styles.typeDot,
+              { backgroundColor: pokemonTypeColors[t.type.name] || "#999" },
+            ]}
           />
         ))}
       </View>

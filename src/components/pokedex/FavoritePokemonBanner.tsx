@@ -1,12 +1,7 @@
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { PokemonDetails } from "../../types/pokemon";
-
-type FavoritePokemonBannerProps = {
-  favoritePokemon: PokemonDetails | null;
-  onRemove: () => void;
-  onSeeDetails: () => void;
-};
+import { FavoritePokemonBannerProps } from "../../types/favoritePokemon";
 
 export default function FavoritePokemonBanner({
   favoritePokemon,
@@ -36,9 +31,14 @@ export default function FavoritePokemonBanner({
           style={[styles.favoriteButton, styles.detailsButton]}
           onPress={onSeeDetails}
         >
-          <Text style={[styles.favoriteButtonText, styles.detailsButtonText]}>See details</Text>
+          <Text style={[styles.favoriteButtonText, styles.detailsButtonText]}>
+            See details
+          </Text>
         </Pressable>
-        <Pressable style={[styles.favoriteButton, styles.removeButton]} onPress={onRemove}>
+        <Pressable
+          style={[styles.favoriteButton, styles.removeButton]}
+          onPress={onRemove}
+        >
           <Text style={styles.favoriteButtonText}>Remove</Text>
         </Pressable>
       </View>

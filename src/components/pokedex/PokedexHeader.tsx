@@ -5,7 +5,7 @@ export default function PokedexHeader() {
   return (
     <View style={styles.header}>
       <Image
-        source={require("../../assets/pokemon-logo.png")}
+        source={require("../../../assets/pokemon-logo.png")}
         style={styles.logo}
         resizeMode="contain"
       />

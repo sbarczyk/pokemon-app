@@ -1,28 +1,28 @@
 import { Stack } from "expo-router";
+import { FavoriteProvider } from "../src/context/FavoriteContext";
 
 export default function RootLayout() {
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
-      <Stack.Screen name="(tabs)"
-        options={{
+    <FavoriteProvider>
+      <Stack
+        screenOptions={{
           headerShown: false,
         }}
-      />
-      <Stack.Screen name="pokemon/[id]"
-        options={{
-          presentation: "transparentModal",
-          headerShown: false,
-          contentStyle: {
-              backgroundColor: "transparent"
-          },
-          animation: "slide_from_bottom",
-          animationDuration: 300,
-        }}
+      >
+        <Stack.Screen
+          name="(tabs)"
+          options={{
+            headerShown: false,
+          }}
         />
-    </Stack>
+        <Stack.Screen
+          name="pokemon/[id]"
+          options={{
+            presentation: "modal",
+            headerShown: false,
+          }}
+        />
+      </Stack>
+    </FavoriteProvider>
   );
 }
