@@ -1,11 +1,11 @@
-import { Image, StyleSheet, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Image, StyleSheet, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function PokedexHeader() {
   return (
     <View style={styles.header}>
       <Image
-        source={require("../../../assets/pokemon-logo.png")}
+        source={require('../../../assets/pokemon-logo.png')}
         style={styles.logo}
         resizeMode="contain"
       />
@@ -18,16 +18,16 @@ export default function PokedexHeader() {
 
 const styles = StyleSheet.create({
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "#fff",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#fff',
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderRadius: 24,
     marginHorizontal: 16,
     marginTop: 10,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOpacity: 0.05,
     shadowRadius: 10,
     elevation: 3,
@@ -41,8 +41,8 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: "#f3f3f3",
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: '#f3f3f3',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

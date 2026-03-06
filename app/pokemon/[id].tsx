@@ -1,100 +1,120 @@
-import React from "react";
-import { View, Text, Image, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, StyleSheet } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useCallback, useMemo, useRef } from 'react';
+import { View, Text, Image, ActivityIndicator, StyleSheet } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import BottomSheet, {
+  BottomSheetView,
+  BottomSheetBackdrop,
+  BottomSheetScrollView,
+} from '@gorhom/bottom-sheet';
 
-import { usePokemonDetails } from "../../src/hooks/usePokemonDetails";
-import { DetailHeader } from "../../src/components/details/DetailHeader";
-import { DetailStats } from "../../src/components/details/DetailsStats";
-import { FavoriteActionButton } from "../../src/components/details/FavoriteActionButton";
+import { usePokemonDetails } from '../../src/hooks/usePokemonDetails';
+import { DetailHeader } from '../../src/components/details/DetailHeader';
+import { DetailStats } from '../../src/components/details/DetailsStats';
+import { FavoriteActionButton } from '../../src/components/details/FavoriteActionButton';
 
 export default function PokemonDetailsModal() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  const { pokemon, loading, isFavorite, handleSetAsFavorite } = usePokemonDetails(id);
+  const { pokemon, loading, isFavorite, handleSetAsFavorite } =
+    usePokemonDetails(id);
 
-  if (loading) return (
-    <View style={styles.container}>
-      <TouchableOpacity style={styles.backdrop} onPress={() => router.back()} />
-      <View style={styles.loaderContainer}><ActivityIndicator size="large" color="#000" /></View>
-    </View>
+  const bottomSheetRef = useRef<BottomSheet>(null);
+
+  const snapPoints = useMemo(() => ['85%'], []);
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        pressBehavior="close"
+      />
+    ),
+    [],
   );
+
+  const handleSheetChanges = useCallback(
+    (index: number) => {
+      if (index === -1) {
+        router.back();
+      }
+    },
+    [router],
+  );
+
+  if (loading || !pokemon) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#000" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity 
-        style={styles.backdrop} 
-        activeOpacity={1} 
-        onPress={() => router.back()} 
-      />
-      
-      <View style={styles.sheet}>
-        <View style={styles.handle} />
-        
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          <DetailHeader name={pokemon?.name || ""} types={pokemon?.types || []} />
+      <BottomSheet
+        ref={bottomSheetRef}
+        index={0}
+        snapPoints={snapPoints}
+        onChange={handleSheetChanges}
+        backdropComponent={renderBackdrop}
+        enablePanDownToClose
+        handleIndicatorStyle={styles.handleIndicator}
+        backgroundStyle={styles.sheetBackground}
+      >
+        <BottomSheetScrollView contentContainerStyle={styles.scrollContent}>
+          <DetailHeader name={pokemon.name} types={pokemon.types} />
 
           <View style={styles.imageContainer}>
-            <Image 
-              source={{ uri: pokemon?.sprites.other?.["official-artwork"].front_default }} 
-              style={styles.mainImage} 
+            <Image
+              source={{
+                uri: pokemon.sprites.other?.['official-artwork'].front_default,
+              }}
+              style={styles.mainImage}
             />
           </View>
 
           <DetailStats pokemon={pokemon} />
 
-          <FavoriteActionButton 
-            isFavorite={isFavorite} 
-            onPress={handleSetAsFavorite} 
+          <FavoriteActionButton
+            isFavorite={isFavorite}
+            onPress={handleSetAsFavorite}
           />
-        </ScrollView>
-      </View>
+        </BottomSheetScrollView>
+      </BottomSheet>
     </View>
   );
 }
-const { height: SCREEN_HEIGHT } = Dimensions.get("window");
+
 const styles = StyleSheet.create({
   container: {
-    flex: 1, 
-    justifyContent: 'flex-end',
-  },
-  backdrop: {
     flex: 1,
-  },
-  sheet: {
-    backgroundColor: "white",
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    height: SCREEN_HEIGHT * 0.85, 
-    width: "100%",
-    paddingBottom: 40,
   },
   loaderContainer: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "white",
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  handle: {
+  sheetBackground: {
+    backgroundColor: 'white',
+    borderRadius: 32,
+  },
+  handleIndicator: {
+    backgroundColor: '#000',
     width: 40,
-    height: 4,
-    backgroundColor: "#000",
-    borderRadius: 2,
-    alignSelf: "center",
-    marginTop: 12,
   },
   scrollContent: {
     paddingHorizontal: 24,
-    paddingBottom: 20,
+    paddingBottom: 40,
   },
   imageContainer: {
-    alignItems: "center",
+    alignItems: 'center',
     marginVertical: 20,
   },
   mainImage: {
     width: 200,
     height: 200,
-    resizeMode: "contain",
+    resizeMode: 'contain',
   },
 });

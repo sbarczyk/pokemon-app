@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { PokemonDetails } from "../types/pokemon";
-import { getPokemonList, getPokemonDetails } from "../services/pokeapi";
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { PokemonDetails } from '../types/pokemon';
+import { getPokemonList, getPokemonDetails } from '../services/pokeapi';
 
 const PAGE_LIMIT = 20;
 
@@ -15,55 +15,59 @@ export function usePokemonList() {
   const loadedOffsetsRef = useRef<Set<number>>(new Set());
   const seenPokemonIdsRef = useRef<Set<number>>(new Set());
 
-  const loadPokemon = useCallback(async (currentOffset: number, shouldClear: boolean = false) => {
-    if (loadingRef.current || (!shouldClear && !hasMore)) return;
-    if (!shouldClear && loadedOffsetsRef.current.has(currentOffset)) return;
+  const loadPokemon = useCallback(
+    async (currentOffset: number, shouldClear: boolean = false) => {
+      if (loadingRef.current || (!shouldClear && !hasMore)) return;
+      if (!shouldClear && loadedOffsetsRef.current.has(currentOffset)) return;
 
-    loadingRef.current = true;
-    
-    if (shouldClear) {
-      setIsRefreshing(true);
-    } else {
-      setIsLoadingMore(true);
-    }
-
-    try {
-      const list = await getPokemonList(PAGE_LIMIT, currentOffset);
-      
-      if (list.length < PAGE_LIMIT) setHasMore(false);
-
-      const details = await Promise.all(list.map((p) => getPokemonDetails(p.url)));
+      loadingRef.current = true;
 
       if (shouldClear) {
-        seenPokemonIdsRef.current.clear();
-        loadedOffsetsRef.current.clear();
+        setIsRefreshing(true);
+      } else {
+        setIsLoadingMore(true);
       }
 
-      loadedOffsetsRef.current.add(currentOffset);
+      try {
+        const list = await getPokemonList(PAGE_LIMIT, currentOffset);
 
-      setPokemon((prev) => {
-        const base = shouldClear ? [] : prev;
-        
-        const uniqueNewDetails = details.filter((p) => {
-          if (seenPokemonIdsRef.current.has(p.id)) return false;
-          seenPokemonIdsRef.current.add(p.id);
-          return true;
+        if (list.length < PAGE_LIMIT) setHasMore(false);
+
+        const details = await Promise.all(
+          list.map((p) => getPokemonDetails(p.url)),
+        );
+
+        if (shouldClear) {
+          seenPokemonIdsRef.current.clear();
+          loadedOffsetsRef.current.clear();
+        }
+
+        loadedOffsetsRef.current.add(currentOffset);
+
+        setPokemon((prev) => {
+          const base = shouldClear ? [] : prev;
+
+          const uniqueNewDetails = details.filter((p) => {
+            if (seenPokemonIdsRef.current.has(p.id)) return false;
+            seenPokemonIdsRef.current.add(p.id);
+            return true;
+          });
+
+          return [...base, ...uniqueNewDetails];
         });
 
-        return [...base, ...uniqueNewDetails];
-      });
-      
-      setOffset(currentOffset);
-      
-    } catch (e) {
-      console.error("Failed to fetch pokemon:", e);
-      if (!shouldClear) loadedOffsetsRef.current.delete(currentOffset);
-    } finally {
-      loadingRef.current = false;
-      setIsRefreshing(false);
-      setIsLoadingMore(false);
-    }
-  }, [hasMore]);
+        setOffset(currentOffset);
+      } catch (e) {
+        console.error('Failed to fetch pokemon:', e);
+        if (!shouldClear) loadedOffsetsRef.current.delete(currentOffset);
+      } finally {
+        loadingRef.current = false;
+        setIsRefreshing(false);
+        setIsLoadingMore(false);
+      }
+    },
+    [hasMore],
+  );
 
   useEffect(() => {
     loadPokemon(0, true);

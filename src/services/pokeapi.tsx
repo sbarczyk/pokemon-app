@@ -1,6 +1,6 @@
-import { Pokemon, PokemonDetails } from "../types/pokemon";
+import { Pokemon, PokemonDetails } from '../types/pokemon';
 
-const BASE_URL = "https://pokeapi.co/api/v2";
+const BASE_URL = 'https://pokeapi.co/api/v2';
 
 export async function getPokemonList(
   limit = 20,

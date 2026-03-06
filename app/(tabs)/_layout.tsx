@@ -1,5 +1,5 @@
-import { Tabs } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { Tabs } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function TabsLayout() {
   return (
@@ -11,7 +11,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="pokedex"
         options={{
-          title: "Home",
+          title: 'Home',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home" size={size} color={color} />
           ),
@@ -20,7 +20,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="camera"
         options={{
-          title: "Camera",
+          title: 'Camera',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="camera-outline" size={size} color={color} />
           ),
@@ -29,7 +29,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="map"
         options={{
-          title: "Map",
+          title: 'Map',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="map-outline" size={size} color={color} />
           ),
@@ -38,8 +38,8 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="favorites"
         options={{
-          href: "/favorites",
-          title: "Favorites",
+          href: '/favorites',
+          title: 'Favorites',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="heart-outline" size={size} color={color} />
           ),

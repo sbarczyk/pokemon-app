@@ -1,10 +1,10 @@
-import { View, Text, Image, StyleSheet, Pressable } from "react-native";
-import { memo } from "react";
-import { Ionicons } from "@expo/vector-icons";
+import { View, Text, Image, StyleSheet, Pressable } from 'react-native';
+import { memo } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 
-import { pokemonTypeColors } from "../../theme/pokemonTypes";
+import { pokemonTypeColors } from '../../theme/pokemonTypes';
 
-import { PokemonCardProps } from "../../types/pokedex";
+import { PokemonCardProps } from '../../types/pokedex';
 
 function PokemonCard({
   pokemon,
@@ -19,7 +19,7 @@ function PokemonCard({
     <Pressable
       style={styles.card}
       onPress={() => onPress?.(pokemon)}
-      android_ripple={{ color: "#ececec" }}
+      android_ripple={{ color: '#ececec' }}
     >
       {isFavorite ? (
         <View style={styles.favoriteBadge}>
@@ -37,7 +37,7 @@ function PokemonCard({
 
       <View style={styles.info}>
         <Text style={styles.name}>{pokemon.name}</Text>
-        <Text style={styles.number}>#{String(id).padStart(3, "0")}</Text>
+        <Text style={styles.number}>#{String(id).padStart(3, '0')}</Text>
       </View>
 
       <View style={styles.types}>
@@ -46,7 +46,7 @@ function PokemonCard({
             key={t.type.name}
             style={[
               styles.typeDot,
-              { backgroundColor: pokemonTypeColors[t.type.name] || "#999" },
+              { backgroundColor: pokemonTypeColors[t.type.name] || '#999' },
             ]}
           />
         ))}
@@ -59,40 +59,40 @@ export default memo(PokemonCard);
 
 const styles = StyleSheet.create({
   card: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff",
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
     marginHorizontal: 16,
     marginVertical: 8,
     padding: 16,
     borderRadius: 16,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 3,
-    overflow: "hidden",
+    overflow: 'hidden',
   },
 
   favoriteBadge: {
-    position: "absolute",
+    position: 'absolute',
     top: 8,
     left: 8,
     width: 18,
     height: 18,
     borderRadius: 9,
-    backgroundColor: "#f4d03f",
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: '#f4d03f',
+    alignItems: 'center',
+    justifyContent: 'center',
     zIndex: 2,
   },
 
   imageBox: {
     width: 56,
     height: 56,
-    backgroundColor: "#f4f4f4",
+    backgroundColor: '#f4f4f4',
     borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     marginRight: 12,
   },
 
@@ -107,17 +107,17 @@ const styles = StyleSheet.create({
 
   name: {
     fontSize: 16,
-    fontWeight: "600",
-    textTransform: "capitalize",
+    fontWeight: '600',
+    textTransform: 'capitalize',
   },
 
   number: {
-    color: "#999",
+    color: '#999',
     marginTop: 2,
   },
 
   types: {
-    flexDirection: "row",
+    flexDirection: 'row',
   },
 
   typeDot: {

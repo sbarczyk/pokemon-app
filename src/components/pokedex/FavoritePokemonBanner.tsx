@@ -1,7 +1,7 @@
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { PokemonDetails } from "../../types/pokemon";
-import { FavoritePokemonBannerProps } from "../../types/favoritePokemon";
+import { PokemonDetails } from '../../types/pokemon';
+import { FavoritePokemonBannerProps } from '../../types/favoritePokemon';
 
 export default function FavoritePokemonBanner({
   favoritePokemon,
@@ -52,23 +52,23 @@ const styles = StyleSheet.create({
     marginTop: 12,
     padding: 12,
     borderRadius: 12,
-    backgroundColor: "#fff",
-    shadowColor: "#000",
+    backgroundColor: '#fff',
+    shadowColor: '#000',
     shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 2,
   },
   favoriteTopRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   favoriteImageBox: {
     width: 52,
     height: 52,
     borderRadius: 8,
-    backgroundColor: "#f5f5f5",
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: '#f5f5f5',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   favoriteImage: {
     width: 44,
@@ -81,40 +81,40 @@ const styles = StyleSheet.create({
   favoriteLabel: {
     fontSize: 10,
     letterSpacing: 0.8,
-    color: "#8b8b8b",
-    fontWeight: "600",
+    color: '#8b8b8b',
+    fontWeight: '600',
   },
   favoriteName: {
     marginTop: 2,
     fontSize: 24,
-    fontWeight: "700",
-    textTransform: "capitalize",
-    color: "#111",
+    fontWeight: '700',
+    textTransform: 'capitalize',
+    color: '#111',
   },
   favoriteActions: {
     marginTop: 10,
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 8,
   },
   favoriteButton: {
     flex: 1,
     borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingVertical: 10,
   },
   detailsButton: {
-    backgroundColor: "#0f0f0f",
+    backgroundColor: '#0f0f0f',
   },
   removeButton: {
-    backgroundColor: "#e8e8e8",
+    backgroundColor: '#e8e8e8',
   },
   favoriteButtonText: {
     fontSize: 12,
-    fontWeight: "600",
-    color: "#333",
+    fontWeight: '600',
+    color: '#333',
   },
   detailsButtonText: {
-    color: "#fff",
+    color: '#fff',
   },
 });

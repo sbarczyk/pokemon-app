@@ -1,8 +1,8 @@
-import { useState, useMemo } from "react";
-import { PokemonDetails } from "../types/pokemon";
+import { useState, useMemo } from 'react';
+import { PokemonDetails } from '../types/pokemon';
 
 export function usePokemonSearch(data: PokemonDetails[]) {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
 
@@ -12,7 +12,7 @@ export function usePokemonSearch(data: PokemonDetails[]) {
     return data.filter((p) => {
       const nameMatch = p.name.toLowerCase().includes(normalizedQuery);
       const idMatch = String(p.id).includes(normalizedQuery);
-      
+
       return nameMatch || idMatch;
     });
   }, [data, normalizedQuery]);
@@ -23,7 +23,6 @@ export function usePokemonSearch(data: PokemonDetails[]) {
     filteredPokemon,
     normalizedQuery,
     displayCount: filteredPokemon.length,
-    // Flaga informująca, czy filtr jest aktywny
     isSearching: normalizedQuery.length > 0,
   };
 }

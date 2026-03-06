@@ -1,6 +1,6 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 export function StatRow({ label, value, icon, color, isMCI = false }: any) {
   return (
@@ -19,8 +19,13 @@ export function StatRow({ label, value, icon, color, isMCI = false }: any) {
 }
 
 const styles = StyleSheet.create({
-  statRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 10 },
-  statLabel: { fontSize: 16, color: "#000", fontWeight: "600" },
-  valueGroup: { flexDirection: "row", alignItems: "center", gap: 8 },
-  statValue: { fontSize: 16, fontWeight: "800" },
+  statRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  statLabel: { fontSize: 16, color: '#000', fontWeight: '600' },
+  valueGroup: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  statValue: { fontSize: 16, fontWeight: '800' },
 });

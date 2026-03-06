@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { PokemonDetails } from "../types/pokemon";
-import * as favoriteService from "../services/favoritePokemon";
-import { FavoriteContextType } from "../types/favoritePokemon";
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { PokemonDetails } from '../types/pokemon';
+import * as favoriteService from '../services/favoritePokemon';
+import { FavoriteContextType } from '../types/favoritePokemon';
 
 const FavoriteContext = createContext<FavoriteContextType | undefined>(
   undefined,
@@ -45,6 +45,6 @@ export function FavoriteProvider({ children }: { children: React.ReactNode }) {
 export const useFavorites = () => {
   const context = useContext(FavoriteContext);
   if (!context)
-    throw new Error("useFavorites must be used within FavoriteProvider");
+    throw new Error('useFavorites must be used within FavoriteProvider');
   return context;
 };

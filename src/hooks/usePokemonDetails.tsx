@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
-import { getPokemonDetailsById } from "../services/pokeapi";
-import { PokemonDetails } from "../types/pokemon";
-import { useFavorites } from "../context/FavoriteContext";
+import { useState, useEffect, useCallback } from 'react';
+import { getPokemonDetailsById } from '../services/pokeapi';
+import { PokemonDetails } from '../types/pokemon';
+import { useFavorites } from '../context/FavoriteContext';
 
 export function usePokemonDetails(id: string | string[]) {
   const [pokemon, setPokemon] = useState<PokemonDetails | null>(null);
@@ -11,12 +11,13 @@ export function usePokemonDetails(id: string | string[]) {
   const isFavorite = favorite?.id === pokemon?.id;
 
   const fetchDetails = useCallback(async () => {
+    if (!id) return;
     try {
       setLoading(true);
       const data = await getPokemonDetailsById(Number(id));
       setPokemon(data);
     } catch (error) {
-      console.error("Error loading pokemon details:", error);
+      console.error('Error loading pokemon details:', error);
     } finally {
       setLoading(false);
     }

@@ -9,7 +9,7 @@ export type PokemonDetails = {
   sprites: {
     front_default: string;
     other?: {
-      "official-artwork": {
+      'official-artwork': {
         front_default: string;
       };
     };
@@ -32,5 +32,5 @@ export type PokemonDetails = {
 };
 
 export type PokemonTypesProps = {
-  types: PokemonDetails["types"];
+  types: PokemonDetails['types'];
 };

@@ -1,5 +1,5 @@
-import { Ionicons } from "@expo/vector-icons";
-import { StyleSheet, TextInput, View } from "react-native";
+import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet, TextInput, View } from 'react-native';
 
 type PokedexSearchBarProps = {
   value: string;
@@ -32,16 +32,16 @@ export default function PokedexSearchBar({
 
 const styles = StyleSheet.create({
   searchBox: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginHorizontal: 20,
     marginTop: 12,
     marginBottom: 10,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderRadius: 14,
     paddingHorizontal: 15,
     paddingVertical: 14,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOpacity: 0.05,
     shadowRadius: 6,
     elevation: 2,

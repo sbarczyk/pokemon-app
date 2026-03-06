@@ -1,4 +1,4 @@
-import { PokemonDetails } from "./pokemon";
+import { PokemonDetails } from './pokemon';
 
 export type FavoriteContextType = {
   favorite: PokemonDetails | null;
