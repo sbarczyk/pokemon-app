@@ -1,8 +1,8 @@
 import React, { useCallback, useMemo, useRef } from 'react';
 import { View, Text, Image, ActivityIndicator, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import BottomSheet, {
-  BottomSheetView,
   BottomSheetBackdrop,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
@@ -52,7 +52,7 @@ export default function PokemonDetailsModal() {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
       <BottomSheet
         ref={bottomSheetRef}
         index={0}
@@ -83,7 +83,7 @@ export default function PokemonDetailsModal() {
           />
         </BottomSheetScrollView>
       </BottomSheet>
-    </View>
+    </SafeAreaView>
   );
 }
 

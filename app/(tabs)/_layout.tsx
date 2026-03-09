@@ -9,7 +9,7 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
-        name="pokedex"
+        name="index"
         options={{
           title: 'Home',
           tabBarIcon: ({ color, size }) => (
