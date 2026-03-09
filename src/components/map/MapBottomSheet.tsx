@@ -22,7 +22,9 @@ const MapBottomSheet = forwardRef<BottomSheetModal, Props>(
         index={0}
         snapPoints={snapPoints}
         enablePanDownToClose
+        enableDynamicSizing={false}
         backgroundStyle={styles.modalBackground}
+        
       >
         <BottomSheetScrollView contentContainerStyle={styles.modalContent}>
           {selectedPin && (
@@ -45,7 +47,7 @@ const MapBottomSheet = forwardRef<BottomSheetModal, Props>(
                 <View style={styles.unpinIconWrapper}>
                   <Ionicons name="location-outline" size={18} color="#E53935" />
                 </View>
-                <Text style={styles.unpinPokemonButtonText}>Unpin Pokémon</Text>
+                <Text style={styles.unpinPokemonButtonText}>Release Pokémon</Text>
               </TouchableOpacity>
 
               <View style={styles.statsWrapper}>

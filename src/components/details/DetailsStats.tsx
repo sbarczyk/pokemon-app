@@ -53,6 +53,6 @@ export const DetailStats = ({ pokemon }: { pokemon: any }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { marginVertical: 10 },
+  container: { marginVertical: 2 },
   line: { height: 1, backgroundColor: '#f0f0f0', marginVertical: 5 },
 });

@@ -20,7 +20,7 @@ export default function MapScreen() {
   const [fetchingPin, setFetchingPin] = useState(false);
 
   const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const snapPoints = useMemo(() => ['70%', '80%'], []);
+  const snapPoints = useMemo(() => ['55%', '92%'], []);
 
   useEffect(() => {
     AsyncStorage.clear();

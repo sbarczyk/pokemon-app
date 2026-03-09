@@ -20,7 +20,7 @@ export default function PokemonDetailsModal() {
 
   const bottomSheetRef = useRef<BottomSheet>(null);
 
-  const snapPoints = useMemo(() => ['85%'], []);
+  const snapPoints = useMemo(() => ['44%', '90%'], []);
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -113,8 +113,8 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
   mainImage: {
-    width: 200,
-    height: 200,
+    width: 180,
+    height: 180,
     resizeMode: 'contain',
   },
 });
