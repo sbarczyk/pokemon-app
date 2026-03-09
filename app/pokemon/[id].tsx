@@ -20,7 +20,7 @@ export default function PokemonDetailsModal() {
 
   const bottomSheetRef = useRef<BottomSheet>(null);
 
-  const snapPoints = useMemo(() => ['44%', '90%'], []);
+  const snapPoints = useMemo(() => ['43%', '90%'], []);
 
   const renderBackdrop = useCallback(
     (props: any) => (
