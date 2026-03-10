@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "deploymentTarget": "15.1",
+      "deploymentTarget": "16.0",
       "bundleIdentifier": "com.sbarczyk.SWMpokemonapp",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
@@ -41,6 +41,19 @@
         {
           "cameraPermissionText": "Allow $(PRODUCT_NAME) to access your camera",
           "enableExperimentalWorklets": true
+        }
+      ],
+      [
+        "expo-build-properties",
+         {
+          "android": {
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "buildToolsVersion": "35.0.0"
+          },
+          "ios": {
+            "deploymentTarget": "16.0"
+          }
         }
       ]
     ],

@@ -17,6 +17,7 @@
     "@gorhom/bottom-sheet": "^5.2.8",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "expo": "~55.0.5",
+    "expo-build-properties": "~55.0.9",
     "expo-constants": "~55.0.7",
     "expo-dev-client": "~55.0.13",
     "expo-font": "~55.0.4",
@@ -31,8 +32,8 @@
     "react-native-reanimated": "4.2.1",
     "react-native-safe-area-context": "~5.6.2",
     "react-native-screens": "~4.23.0",
-    
     "react-native-vision-camera": "^4.7.3",
+    "react-native-vision-camera-face-detector": "^1.10.1",
     "react-native-web": "^0.21.2",
     "react-native-worklets-core": "^1.6.3"
   },
