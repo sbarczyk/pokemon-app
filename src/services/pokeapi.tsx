@@ -34,3 +34,12 @@ export async function getPokemonDetailsById(
   }
   return res.json();
 }
+
+export async function getAllPokemonNames(): Promise<Pokemon[]> {
+  const res = await fetch(`${BASE_URL}/pokemon?limit=10000`);
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(`Failed to fetch pokemon names: ${res.statusText}`);
+  }
+  return data.results;
+}

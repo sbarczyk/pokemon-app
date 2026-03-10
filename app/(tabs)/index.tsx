@@ -11,7 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 import { usePokemonList } from '../../src/hooks/usePokemonList';
-import { usePokemonSearch } from '../../src/hooks/usePokemonSearch';
+import { useGlobalPokemonSearch } from '../../src/hooks/usePokemonSearch';
 import { useFavorites } from '../../src/context/FavoriteContext';
 import { usePokedexInteractions } from '../../src/hooks/usePokedexInteractions';
 
@@ -24,19 +24,23 @@ import { useRouter } from 'expo-router';
 export default function PokedexScreen() {
   const { pokemon, isRefreshing, isLoadingMore, refreshPokemon, loadMore } =
     usePokemonList();
+
   const {
     searchQuery,
     setSearchQuery,
     filteredPokemon,
-    displayCount,
     isSearching,
-    normalizedQuery,
-  } = usePokemonSearch(pokemon);
+    isLoadingSearch,
+  } = useGlobalPokemonSearch();
+
   const { favorite, toggleFavorite, clearFavorite } = useFavorites();
   const router = useRouter();
+  const { handlePokemonPress, heartVisible, animatedValue } = usePokedexInteractions(toggleFavorite);
 
-  const { handlePokemonPress, heartVisible, animatedValue } =
-    usePokedexInteractions(toggleFavorite);
+  const displayData = isSearching ? filteredPokemon : pokemon;
+  const displayCount = isSearching ? filteredPokemon.length : pokemon.length;
+  const normalizedQuery = searchQuery.trim();
+  const showSearchEmpty = isSearching && !isLoadingSearch && filteredPokemon.length === 0;
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
@@ -50,13 +54,18 @@ export default function PokedexScreen() {
 
       <View style={styles.titleRow}>
         <Text style={styles.title}>Pokedex</Text>
-        <Text style={styles.count}>{displayCount} pokemons found</Text>
       </View>
 
       <PokedexSearchBar value={searchQuery} onChangeText={setSearchQuery} />
 
+      {searchQuery.trim().length > 0 && (
+        <Text style={[styles.count, styles.countBelowSearch]}>
+          {displayCount} pokemons found
+        </Text>
+      )}
+
       <FlatList
-        data={filteredPokemon}
+        data={displayData}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <PokemonCard
@@ -70,16 +79,16 @@ export default function PokedexScreen() {
         refreshing={isRefreshing}
         onRefresh={refreshPokemon}
         ListFooterComponent={
-          isLoadingMore ? (
+          (isSearching && isLoadingSearch) || (!isSearching && isLoadingMore) ? (
             <ActivityIndicator size="small" style={styles.loader} />
           ) : null
         }
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
-          normalizedQuery ? (
+          showSearchEmpty ? (
             <View style={styles.emptySearch}>
               <Text style={styles.emptySearchText}>
-                No pokemon matching: "{normalizedQuery}"
+                No pokemon matching "{normalizedQuery}"
               </Text>
             </View>
           ) : null
@@ -113,6 +122,7 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 24, fontWeight: '700', color: '#111' },
   count: { color: '#888', fontSize: 14 },
+  countBelowSearch: { marginHorizontal: 20, marginTop: 4, marginBottom: 4 },
   listContent: { paddingBottom: 20 },
   loader: { marginVertical: 16 },
   emptySearch: { padding: 32, alignItems: 'center' },

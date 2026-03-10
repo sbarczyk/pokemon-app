@@ -14,6 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
+      "deploymentTarget": "15.1",
       "bundleIdentifier": "com.sbarczyk.SWMpokemonapp",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
@@ -38,7 +39,8 @@
       [
         "react-native-vision-camera",
         {
-          "cameraPermissionText": "Allow $(PRODUCT_NAME) to access your camera"
+          "cameraPermissionText": "Allow $(PRODUCT_NAME) to access your camera",
+          "enableExperimentalWorklets": true
         }
       ]
     ],
