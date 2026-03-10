@@ -8,6 +8,7 @@ import BottomSheet, {
 } from '@gorhom/bottom-sheet';
 
 import { usePokemonDetails } from '../../src/hooks/usePokemonDetails';
+import { useTheme } from '../../src/context/ThemeContext';
 import { DetailHeader } from '../../src/components/details/DetailHeader';
 import { DetailStats } from '../../src/components/details/DetailsStats';
 import { FavoriteActionButton } from '../../src/components/details/FavoriteActionButton';
@@ -15,6 +16,7 @@ import { FavoriteActionButton } from '../../src/components/details/FavoriteActio
 export default function PokemonDetailsModal() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const { colors } = useTheme();
   const { pokemon, loading, isFavorite, handleSetAsFavorite } =
     usePokemonDetails(id);
 
@@ -45,14 +47,14 @@ export default function PokemonDetailsModal() {
 
   if (loading || !pokemon) {
     return (
-      <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color="#000" />
+      <View style={[styles.loaderContainer, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.text} />
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'left', 'right', 'bottom']}>
       <BottomSheet
         ref={bottomSheetRef}
         index={0}
@@ -60,8 +62,8 @@ export default function PokemonDetailsModal() {
         onChange={handleSheetChanges}
         backdropComponent={renderBackdrop}
         enablePanDownToClose
-        handleIndicatorStyle={styles.handleIndicator}
-        backgroundStyle={styles.sheetBackground}
+        handleIndicatorStyle={[styles.handleIndicator, { backgroundColor: colors.text }]}
+        backgroundStyle={[styles.sheetBackground, { backgroundColor: colors.card }]}
       >
         <BottomSheetScrollView contentContainerStyle={styles.scrollContent}>
           <DetailHeader name={pokemon.name} types={pokemon.types} />

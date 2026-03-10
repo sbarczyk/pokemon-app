@@ -1,8 +1,10 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
+import { useTheme } from '../../context/ThemeContext';
 import { StatRow } from './StatRow';
 
 export const DetailStats = ({ pokemon }: { pokemon: any }) => {
+  const { colors } = useTheme();
   const getStat = (name: string) =>
     pokemon.stats.find((s: any) => s.stat.name === name)?.base_stat || 0;
 
@@ -20,7 +22,7 @@ export const DetailStats = ({ pokemon }: { pokemon: any }) => {
         icon="flash-outline"
         color="#4ade80"
       />
-      <View style={styles.line} />
+      <View style={[styles.line, { backgroundColor: colors.border }]} />
       <StatRow
         label="Attack"
         value={getStat('attack')}
@@ -35,7 +37,7 @@ export const DetailStats = ({ pokemon }: { pokemon: any }) => {
         color="#fbbf24"
         isMCI
       />
-      <View style={styles.line} />
+      <View style={[styles.line, { backgroundColor: colors.border }]} />
       <StatRow
         label="Defense"
         value={getStat('defense')}
@@ -54,5 +56,5 @@ export const DetailStats = ({ pokemon }: { pokemon: any }) => {
 
 const styles = StyleSheet.create({
   container: { marginVertical: 2 },
-  line: { height: 1, backgroundColor: '#f0f0f0', marginVertical: 5 },
+  line: { height: 1, marginVertical: 5 },
 });

@@ -3,7 +3,6 @@ import { useMemo, useRef, useState, useEffect, useCallback } from 'react';
 import MapView, { LongPressEvent, Marker } from 'react-native-maps';
 import { BottomSheetModal, BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import PokemonPin from '../../src/types/pokemonPin';
 import { savePokemonPinsToStorage, getPokemonPinsFromStorage } from '../../src/services/pinPokemon';
@@ -11,10 +10,12 @@ import { getPokemonDetailsById } from '../../src/services/pokeapi';
 import { getPokemonImageUrl } from '../../src/utils/pokemon';
 
 import MapBottomSheet from '../../src/components/map/MapBottomSheet';
+import { useTheme } from '../../src/context/ThemeContext';
 
 const randomPokemonId = () => Math.floor(Math.random() * 1025) + 1;
 
 export default function MapScreen() {
+  const { colors } = useTheme();
   const [pokemonPins, setPokemonPins] = useState<PokemonPin[]>([]);
   const [selectedPin, setSelectedPin] = useState<PokemonPin | null>(null);
   const [fetchingPin, setFetchingPin] = useState(false);
@@ -23,7 +24,6 @@ export default function MapScreen() {
   const snapPoints = useMemo(() => ['55%', '92%'], []);
 
   useEffect(() => {
-    AsyncStorage.clear();
     getPokemonPinsFromStorage().then(setPokemonPins);
   }, []);
 
@@ -64,7 +64,7 @@ export default function MapScreen() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <BottomSheetModalProvider>
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
           <MapView
             style={styles.map}
             onLongPress={handleLongPress}
@@ -81,7 +81,7 @@ export default function MapScreen() {
                 coordinate={{ latitude: pin.latitude, longitude: pin.longitude }}
                 onPress={() => handleMarkerPress(pin)}
               >
-                <View style={styles.markerContainer}>
+                <View style={[styles.markerContainer, { backgroundColor: colors.card }]}>
                   <Image 
                     source={{ uri: getPokemonImageUrl(pin.pokemonDetails) }} 
                     style={styles.pokemonMarkerImage} 
@@ -99,7 +99,7 @@ export default function MapScreen() {
           />
 
           {fetchingPin && (
-            <View style={styles.fetchingOverlay}>
+            <View style={[styles.fetchingOverlay, { backgroundColor: colors.background + 'E6' }]}>
               <ActivityIndicator size="large" color="#3B4CCA" />
             </View>
           )}
@@ -118,7 +118,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   markerContainer: {
-    backgroundColor: 'white',
     borderRadius: 25,
     padding: 4,
     borderWidth: 2,

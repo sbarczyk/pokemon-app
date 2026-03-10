@@ -1,8 +1,10 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
 import { useEffect } from 'react';
+import { useTheme } from '../../src/context/ThemeContext';
 
 export default function CameraScreen() {
+  const { colors } = useTheme();
   const device = useCameraDevice('front');
   const { hasPermission, requestPermission } = useCameraPermission();
 
@@ -13,15 +15,23 @@ export default function CameraScreen() {
   }, [hasPermission, requestPermission]);
 
   if (!device) {
-    return <Text style={styles.text}>No camera device found</Text>;
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <Text style={[styles.text, { color: colors.text }]}>No camera device found</Text>
+      </View>
+    );
   }
 
   if (!hasPermission) {
-    return <Text style={styles.text}>No permission to access camera</Text>;
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <Text style={[styles.text, { color: colors.text }]}>No permission to access camera</Text>
+      </View>
+    );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Camera
         style={styles.camera}
         device={device}
@@ -44,8 +54,5 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: 'black',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 });

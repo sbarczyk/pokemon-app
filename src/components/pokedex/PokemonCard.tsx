@@ -3,7 +3,7 @@ import { memo } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 
 import { pokemonTypeColors } from '../../theme/pokemonTypes';
-
+import { useTheme } from '../../context/ThemeContext';
 import { PokemonCardProps } from '../../types/pokedex';
 
 function PokemonCard({
@@ -11,22 +11,23 @@ function PokemonCard({
   onPress,
   isFavorite = false,
 }: PokemonCardProps) {
+  const { colors } = useTheme();
   if (!pokemon || !pokemon.sprites) return null;
 
   const id = pokemon.id;
 
   return (
     <Pressable
-      style={styles.card}
+      style={[styles.card, { backgroundColor: colors.card }]}
       onPress={() => onPress?.(pokemon)}
-      android_ripple={{ color: '#ececec' }}
+      android_ripple={{ color: colors.border }}
     >
       {isFavorite ? (
-        <View style={styles.favoriteBadge}>
-          <Ionicons name="heart" size={12} color="#111" />
+        <View style={[styles.favoriteBadge, { backgroundColor: '#f4d03f' }]}>
+          <Ionicons name="heart" size={12} color={colors.text} />
         </View>
       ) : null}
-      <View style={styles.imageBox}>
+      <View style={[styles.imageBox, { backgroundColor: colors.border }]}>
         {pokemon.sprites?.front_default ? (
           <Image
             source={{ uri: pokemon.sprites.front_default }}
@@ -36,8 +37,8 @@ function PokemonCard({
       </View>
 
       <View style={styles.info}>
-        <Text style={styles.name}>{pokemon.name}</Text>
-        <Text style={styles.number}>#{String(id).padStart(3, '0')}</Text>
+        <Text style={[styles.name, { color: colors.text }]}>{pokemon.name}</Text>
+        <Text style={[styles.number, { color: colors.textSecondary }]}>#{String(id).padStart(3, '0')}</Text>
       </View>
 
       <View style={styles.types}>
@@ -61,7 +62,6 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     marginHorizontal: 16,
     marginVertical: 8,
     padding: 16,
@@ -89,7 +89,6 @@ const styles = StyleSheet.create({
   imageBox: {
     width: 56,
     height: 56,
-    backgroundColor: '#f4f4f4',
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
@@ -112,7 +111,6 @@ const styles = StyleSheet.create({
   },
 
   number: {
-    color: '#999',
     marginTop: 2,
   },
 

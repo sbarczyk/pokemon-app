@@ -1,29 +1,46 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../../context/ThemeContext';
 
 type Props = {
   isFavorite: boolean;
   onPress: () => void;
 };
 
-export const FavoriteActionButton = ({ isFavorite, onPress }: Props) => (
-  <TouchableOpacity
-    style={[styles.button, isFavorite ? styles.favoriteActive : styles.notFavorite]}
-    onPress={onPress}
-    activeOpacity={0.7}
-  >
-    <Text style={[styles.text, { color: isFavorite ? '#FF4757' : 'white' }]}>
-      {isFavorite ? 'Remove from Favorites' : 'Set as my Favorite'}
-    </Text>
-    
-    <Ionicons 
-      name={isFavorite ? "heart" : "heart-outline"} 
-      size={20} 
-      color={isFavorite ? "#FF4757" : "white"} 
-    />
-  </TouchableOpacity>
-);
+const FAVORITE_RED = '#FF4757';
+
+export const FavoriteActionButton = ({ isFavorite, onPress }: Props) => {
+  const { colors } = useTheme();
+  const notFavoriteBg = '#1A1A1A';
+  const notFavoriteText = '#fff';
+  return (
+    <TouchableOpacity
+      style={[
+        styles.button,
+        isFavorite
+          ? { backgroundColor: colors.border, borderColor: FAVORITE_RED }
+          : { backgroundColor: notFavoriteBg, borderColor: notFavoriteBg },
+      ]}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
+      <Text
+        style={[
+          styles.text,
+          { color: isFavorite ? FAVORITE_RED : notFavoriteText },
+        ]}
+      >
+        {isFavorite ? 'Remove from Favorites' : 'Set as my Favorite'}
+      </Text>
+      <Ionicons
+        name={isFavorite ? 'heart' : 'heart-outline'}
+        size={20}
+        color={isFavorite ? FAVORITE_RED : notFavoriteText}
+      />
+    </TouchableOpacity>
+  );
+};
 
 const styles = StyleSheet.create({
   button: {
@@ -36,16 +53,8 @@ const styles = StyleSheet.create({
     gap: 12,
     borderWidth: 2,
   },
-  favoriteActive: { 
-    backgroundColor: 'transparent', 
-    borderColor: '#FF4757' 
-  },
-  notFavorite: { 
-    backgroundColor: '#1A1A1A', 
-    borderColor: '#1A1A1A' 
-  },
-  text: { 
-    fontWeight: '700', 
-    fontSize: 16 
+  text: {
+    fontWeight: '700',
+    fontSize: 16,
   },
 });

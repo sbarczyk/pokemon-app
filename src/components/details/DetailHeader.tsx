@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { pokemonTypeColors } from '../../theme/pokemonTypes';
+import { useTheme } from '../../context/ThemeContext';
 
 export const DetailHeader = ({
   name,
@@ -8,24 +9,27 @@ export const DetailHeader = ({
 }: {
   name: string;
   types: any[];
-}) => (
-  <View style={styles.container}>
-    <Text style={styles.pokemonName}>{name}</Text>
-    <View style={styles.typesRow}>
-      {types.map((t) => (
-        <View key={t.type.name} style={styles.typeBadge}>
-          <View
-            style={[
-              styles.typeDot,
-              { backgroundColor: pokemonTypeColors[t.type.name] || '#777' },
-            ]}
-          />
-          <Text style={styles.typeText}>{t.type.name}</Text>
-        </View>
-      ))}
+}) => {
+  const { colors } = useTheme();
+  return (
+    <View style={styles.container}>
+      <Text style={[styles.pokemonName, { color: colors.text }]}>{name}</Text>
+      <View style={styles.typesRow}>
+        {types.map((t) => (
+          <View key={t.type.name} style={[styles.typeBadge, { backgroundColor: colors.border }]}>
+            <View
+              style={[
+                styles.typeDot,
+                { backgroundColor: pokemonTypeColors[t.type.name] || '#777' },
+              ]}
+            />
+            <Text style={[styles.typeText, { color: colors.text }]}>{t.type.name}</Text>
+          </View>
+        ))}
+      </View>
     </View>
-  </View>
-);
+  );
+};
 
 const styles = StyleSheet.create({
   container: { alignItems: 'center', marginVertical: 20 },
@@ -39,7 +43,6 @@ const styles = StyleSheet.create({
   typeBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f2f2f2',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
@@ -48,7 +51,6 @@ const styles = StyleSheet.create({
   typeText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333',
     textTransform: 'capitalize',
   },
 });

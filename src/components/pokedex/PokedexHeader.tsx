@@ -1,17 +1,26 @@
-import { Image, StyleSheet, View } from 'react-native';
+import { Image, StyleSheet, View, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function PokedexHeader() {
+  const router = useRouter();
+  const { colors } = useTheme();
+
   return (
-    <View style={styles.header}>
+    <View style={[styles.header, { backgroundColor: colors.card }]}>
       <Image
         source={require('../../../assets/pokemon-logo.png')}
         style={styles.logo}
         resizeMode="contain"
       />
-      <View style={styles.settings}>
-        <Ionicons name="settings-outline" size={22} color="#444" />
-      </View>
+      <Pressable
+        style={[styles.settings, { backgroundColor: colors.border }]}
+        onPress={() => router.push('/settings')}
+        android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
+      >
+        <Ionicons name="settings-outline" size={22} color={colors.text} />
+      </Pressable>
     </View>
   );
 }
@@ -21,7 +30,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#fff',
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderRadius: 24,
@@ -41,7 +49,6 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: '#f3f3f3',
     alignItems: 'center',
     justifyContent: 'center',
   },

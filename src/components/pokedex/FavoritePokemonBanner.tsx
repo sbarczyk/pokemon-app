@@ -1,6 +1,6 @@
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { PokemonDetails } from '../../types/pokemon';
+import { useTheme } from '../../context/ThemeContext';
 import { FavoritePokemonBannerProps } from '../../types/favoritePokemon';
 
 export default function FavoritePokemonBanner({
@@ -8,12 +8,14 @@ export default function FavoritePokemonBanner({
   onRemove,
   onSeeDetails,
 }: FavoritePokemonBannerProps) {
+  const { colors, isDark } = useTheme();
+  const removeButtonBg = isDark ? colors.border : colors.text;
   if (!favoritePokemon) return null;
 
   return (
-    <View style={styles.favoriteSection}>
+    <View style={[styles.favoriteSection, { backgroundColor: colors.card }]}>
       <View style={styles.favoriteTopRow}>
-        <View style={styles.favoriteImageBox}>
+        <View style={[styles.favoriteImageBox, { backgroundColor: colors.border }]}>
           {favoritePokemon.sprites?.front_default ? (
             <Image
               source={{ uri: favoritePokemon.sprites.front_default }}
@@ -22,8 +24,8 @@ export default function FavoritePokemonBanner({
           ) : null}
         </View>
         <View style={styles.favoriteInfo}>
-          <Text style={styles.favoriteLabel}>YOUR FAVORITE POKEMON</Text>
-          <Text style={styles.favoriteName}>{favoritePokemon.name}</Text>
+          <Text style={[styles.favoriteLabel, { color: colors.textSecondary }]}>YOUR FAVORITE POKEMON</Text>
+          <Text style={[styles.favoriteName, { color: colors.text }]}>{favoritePokemon.name}</Text>
         </View>
       </View>
       <View style={styles.favoriteActions}>
@@ -36,10 +38,10 @@ export default function FavoritePokemonBanner({
           </Text>
         </Pressable>
         <Pressable
-          style={[styles.favoriteButton, styles.removeButton]}
+          style={[styles.favoriteButton, styles.removeButton, { backgroundColor: removeButtonBg }]}
           onPress={onRemove}
         >
-          <Text style={styles.favoriteButtonText}>Remove</Text>
+          <Text style={[styles.favoriteButtonText, styles.removeButtonText]}>Remove</Text>
         </Pressable>
       </View>
     </View>
@@ -52,7 +54,6 @@ const styles = StyleSheet.create({
     marginTop: 12,
     padding: 12,
     borderRadius: 12,
-    backgroundColor: '#fff',
     shadowColor: '#000',
     shadowOpacity: 0.05,
     shadowRadius: 8,
@@ -66,7 +67,6 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 8,
-    backgroundColor: '#f5f5f5',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -81,7 +81,6 @@ const styles = StyleSheet.create({
   favoriteLabel: {
     fontSize: 10,
     letterSpacing: 0.8,
-    color: '#8b8b8b',
     fontWeight: '600',
   },
   favoriteName: {
@@ -89,7 +88,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '700',
     textTransform: 'capitalize',
-    color: '#111',
   },
   favoriteActions: {
     marginTop: 10,
@@ -106,15 +104,15 @@ const styles = StyleSheet.create({
   detailsButton: {
     backgroundColor: '#0f0f0f',
   },
-  removeButton: {
-    backgroundColor: '#e8e8e8',
-  },
+  removeButton: {},
   favoriteButtonText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#333',
   },
   detailsButtonText: {
+    color: '#fff',
+  },
+  removeButtonText: {
     color: '#fff',
   },
 });

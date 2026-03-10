@@ -20,6 +20,7 @@ import FavoritePokemonBanner from '../../src/components/pokedex/FavoritePokemonB
 import PokedexHeader from '../../src/components/pokedex/PokedexHeader';
 import PokedexSearchBar from '../../src/components/pokedex/PokedexSearchBar';
 import { useRouter } from 'expo-router';
+import { useTheme } from '../../src/context/ThemeContext';
 
 export default function PokedexScreen() {
   const { pokemon, isRefreshing, isLoadingMore, refreshPokemon, loadMore } =
@@ -35,6 +36,7 @@ export default function PokedexScreen() {
 
   const { favorite, toggleFavorite, clearFavorite } = useFavorites();
   const router = useRouter();
+  const { colors } = useTheme();
   const { handlePokemonPress, heartVisible, animatedValue } = usePokedexInteractions(toggleFavorite);
 
   const displayData = isSearching ? filteredPokemon : pokemon;
@@ -43,7 +45,7 @@ export default function PokedexScreen() {
   const showSearchEmpty = isSearching && !isLoadingSearch && filteredPokemon.length === 0;
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
       <PokedexHeader />
 
       <FavoritePokemonBanner
@@ -53,13 +55,13 @@ export default function PokedexScreen() {
       />
 
       <View style={styles.titleRow}>
-        <Text style={styles.title}>Pokedex</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Pokedex</Text>
       </View>
 
       <PokedexSearchBar value={searchQuery} onChangeText={setSearchQuery} />
 
       {searchQuery.trim().length > 0 && (
-        <Text style={[styles.count, styles.countBelowSearch]}>
+        <Text style={[styles.count, styles.countBelowSearch, { color: colors.textSecondary }]}>
           {displayCount} pokemons found
         </Text>
       )}
@@ -87,7 +89,7 @@ export default function PokedexScreen() {
         ListEmptyComponent={
           showSearchEmpty ? (
             <View style={styles.emptySearch}>
-              <Text style={styles.emptySearchText}>
+              <Text style={[styles.emptySearchText, { color: colors.textSecondary }]}>
                 No pokemon matching "{normalizedQuery}"
               </Text>
             </View>
@@ -112,7 +114,7 @@ export default function PokedexScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
+  container: { flex: 1 },
   titleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -120,13 +122,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginTop: 20,
   },
-  title: { fontSize: 24, fontWeight: '700', color: '#111' },
-  count: { color: '#888', fontSize: 14 },
+  title: { fontSize: 24, fontWeight: '700' },
+  count: { fontSize: 14 },
   countBelowSearch: { marginHorizontal: 20, marginTop: 4, marginBottom: 4 },
   listContent: { paddingBottom: 20 },
   loader: { marginVertical: 16 },
   emptySearch: { padding: 32, alignItems: 'center' },
-  emptySearchText: { fontSize: 16, color: '#888', textAlign: 'center' },
+  emptySearchText: { fontSize: 16, textAlign: 'center' },
   heartOverlay: {
     position: 'absolute',
     top: 0,

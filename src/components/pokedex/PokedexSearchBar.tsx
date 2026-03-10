@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, TextInput, View } from 'react-native';
+import { useTheme } from '../../context/ThemeContext';
 
 type PokedexSearchBarProps = {
   value: string;
@@ -10,17 +11,19 @@ export default function PokedexSearchBar({
   value,
   onChangeText,
 }: PokedexSearchBarProps) {
+  const { colors } = useTheme();
   return (
-    <View style={styles.searchBox}>
+    <View style={[styles.searchBox, { backgroundColor: colors.card }]}>
       <Ionicons
         name="search"
         size={18}
-        color="#888"
+        color={colors.textSecondary}
         style={styles.searchIcon}
       />
       <TextInput
         placeholder="Search a pokemon..."
-        style={styles.searchInput}
+        placeholderTextColor={colors.textSecondary}
+        style={[styles.searchInput, { color: colors.text }]}
         value={value}
         onChangeText={onChangeText}
         autoCapitalize="none"
@@ -37,7 +40,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginTop: 12,
     marginBottom: 10,
-    backgroundColor: '#fff',
     borderRadius: 14,
     paddingHorizontal: 15,
     paddingVertical: 14,
