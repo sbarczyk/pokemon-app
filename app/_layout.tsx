@@ -5,11 +5,13 @@ import { StatusBar } from 'expo-status-bar';
 import { FavoriteProvider } from '../src/context/FavoriteContext';
 import { ThemeProvider } from '../src/context/ThemeContext';
 import { useTheme } from '../src/context/ThemeContext';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 function RootLayoutContent() {
   const { isDark, colors } = useTheme();
   return (
     <>
+    <SafeAreaProvider>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <FavoriteProvider>
         <BottomSheetModalProvider>
@@ -37,6 +39,7 @@ function RootLayoutContent() {
           </Stack>
         </BottomSheetModalProvider>
       </FavoriteProvider>
+    </SafeAreaProvider>
     </>
   );
 }

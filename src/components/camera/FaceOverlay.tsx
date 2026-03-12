@@ -1,64 +1,56 @@
-import React, { useRef } from 'react';
-import { View, Image, StyleSheet, useWindowDimensions } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Face } from 'react-native-vision-camera-face-detector';
-
-import { FrameDimensions, OverlayPosition } from '../../types/camera';
-import { calculatePokemonPosition } from '../../utils/coordinateHelper';
-import { smoothOverlayPosition } from '../../utils/positionSmoothing';
+import { FrameDimensions } from '../../types/camera';
+import { PokemonSprite } from './PokemonSprite';
 
 type FaceOverlayProps = {
   faces: Face[];
   frameDimensions: FrameDimensions | null;
 };
 
-const PIKACHU_SPRITE_URL =
-  'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png';
+function FaceBox({ face }: { face: Face }) {
+  const { x, y, width, height } = face.bounds;
+  const left = x;
+  return (
+    <View
+      style={[
+        styles.faceBox,
+        { left, top: y, width, height },
+      ]}
+    />
+  );
+}
 
-export const FaceOverlay = ({ faces, frameDimensions }: FaceOverlayProps) => {
-  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
-  const previousPositionsRef = useRef<Record<number, OverlayPosition>>({});
-
-  if (!frameDimensions) {
+export function FaceOverlay({ faces, frameDimensions }: FaceOverlayProps) {
+  if (!frameDimensions || faces.length === 0) {
     return null;
   }
 
-  if (faces.length === 0) {
-    previousPositionsRef.current = {};
-  }
-
   return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="none">
-      {faces.map((face, index) => {
-        const rawPosition = calculatePokemonPosition(
-          face,
-          screenWidth,
-          screenHeight,
-          frameDimensions.width,
-          frameDimensions.height,
-        );
-
-        const previous = previousPositionsRef.current[index];
-        const smoothedPosition = smoothOverlayPosition(rawPosition, previous);
-        previousPositionsRef.current[index] = smoothedPosition;
-
-        return (
-          <View key={index} style={[styles.pokemonContainer, smoothedPosition]}>
-            <Image source={{ uri: PIKACHU_SPRITE_URL }} style={styles.image} />
-          </View>
-        );
-      })}
+    <View style={[StyleSheet.absoluteFill, styles.overlay]} pointerEvents="none">
+      {faces.map((face, index) => (
+        <FaceBox key={`box-${index}`} face={face} />
+      ))}
+      {faces.map((face, index) => (
+        <PokemonSprite key={`sprite-${index}`} face={face} />
+      ))}
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  pokemonContainer: {
+  overlay: {
     position: 'absolute',
-    zIndex: 1000,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 10,
   },
-  image: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'contain',
+  faceBox: {
+    position: 'absolute',
+    borderWidth: 2,
+    borderColor: 'rgba(0, 255, 128, 0.9)',
+    borderRadius: 4,
   },
 });

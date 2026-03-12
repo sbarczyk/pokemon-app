@@ -8,5 +8,6 @@ export type OverlayPosition = {
   top: number;
   width: number;
   height: number;
-  transform?: Array<{ rotate: string }>;
+  /** Rotation in degrees (from face.rollAngle), so sprite tilts with head. */
+  rotateDeg: number;
 };
