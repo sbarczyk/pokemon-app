@@ -2,131 +2,92 @@ import { Face } from 'react-native-vision-camera-face-detector';
 
 import { OverlayPosition } from '../types/camera';
 
-type Point = { x: number; y: number };
-
-type MappingOptions = {
-  isMirrored?: boolean;
-};
-
-type OrientedPoint = {
-  point: Point;
+type FaceBounds = {
+  x: number;
+  y: number;
   width: number;
   height: number;
 };
 
-const orientPoint = (
-  point: Point,
-  sourceWidth: number,
-  sourceHeight: number,
-  targetWidth: number,
-  targetHeight: number,
-): OrientedPoint => {
-  const sourceIsLandscape = sourceWidth > sourceHeight;
-  const targetIsLandscape = targetWidth > targetHeight;
+const MIN_POKEMON_SIZE = 56;
+const MAX_POKEMON_SIZE_RATIO = 0.28;
+const POKEMON_SIZE_DIVISOR = 1.25;
+const FOREHEAD_Y_OFFSET = 0.8;
 
-  if (sourceIsLandscape === targetIsLandscape) {
-    return {
-      point,
-      width: sourceWidth,
-      height: sourceHeight,
-    };
-  }
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(Math.max(value, min), max);
 
-  if (sourceIsLandscape && !targetIsLandscape) {
+const rotateFaceBoundsToPortrait = (
+  bounds: FaceBounds,
+  frameWidth: number,
+  frameHeight: number,
+  screenWidth: number,
+  screenHeight: number,
+) => {
+  const needsRotation = frameWidth > frameHeight && screenHeight > screenWidth;
+
+  if (!needsRotation) {
     return {
-      point: {
-        x: point.y,
-        y: sourceWidth - point.x,
-      },
-      width: sourceHeight,
-      height: sourceWidth,
+      bounds,
+      frame: { width: frameWidth, height: frameHeight },
     };
   }
 
   return {
-    point: {
-      x: sourceHeight - point.y,
-      y: point.x,
+    bounds: {
+      x: bounds.y,
+      y: frameWidth - (bounds.x + bounds.width),
+      width: bounds.height,
+      height: bounds.width,
     },
-    width: sourceHeight,
-    height: sourceWidth,
-  };
-};
-
-const mapPointToTarget = (
-  point: Point,
-  targetWidth: number,
-  targetHeight: number,
-  sourceWidth: number,
-  sourceHeight: number,
-  options?: MappingOptions,
-): Point => {
-  const oriented = orientPoint(point, sourceWidth, sourceHeight, targetWidth, targetHeight);
-  const mirroredX = options?.isMirrored
-    ? oriented.width - oriented.point.x
-    : oriented.point.x;
-
-  const scale = Math.max(
-    targetWidth / oriented.width,
-    targetHeight / oriented.height,
-  );
-  const renderedWidth = oriented.width * scale;
-  const renderedHeight = oriented.height * scale;
-  const offsetX = (targetWidth - renderedWidth) / 2;
-  const offsetY = (targetHeight - renderedHeight) / 2;
-
-  return {
-    x: offsetX + mirroredX * scale,
-    y: offsetY + oriented.point.y * scale,
+    frame: { width: frameHeight, height: frameWidth },
   };
 };
 
 export const calculatePokemonPosition = (
   face: Face,
-  targetWidth: number,
-  targetHeight: number,
+  screenWidth: number,
+  screenHeight: number,
   frameWidth: number,
   frameHeight: number,
-  options?: MappingOptions,
 ): OverlayPosition => {
-  const map = (point: Point) =>
-    mapPointToTarget(
-      point,
-      targetWidth,
-      targetHeight,
-      frameWidth,
-      frameHeight,
-      options,
-    );
+  const { bounds, frame } = rotateFaceBoundsToPortrait(
+    face.bounds,
+    frameWidth,
+    frameHeight,
+    screenWidth,
+    screenHeight,
+  );
+  const scale = Math.max(
+    screenWidth / frame.width,
+    screenHeight / frame.height,
+  );
+  const offsetX = (screenWidth - frame.width * scale) / 2;
+  const offsetY = (screenHeight - frame.height * scale) / 2;
 
-  const { x, y, width, height } = face.bounds;
-  const topLeft = map({ x, y });
-  const bottomRight = map({ x: x + width, y: y + height });
+  const faceX = bounds.x * scale + offsetX;
+  const faceY = bounds.y * scale + offsetY;
+  const faceWidth = bounds.width * scale;
+  const faceHeight = bounds.height * scale;
+  const mirroredX = screenWidth - (faceX + faceWidth);
 
-  const faceLeft = Math.min(topLeft.x, bottomRight.x);
-  const faceTop = Math.min(topLeft.y, bottomRight.y);
-  const faceWidth = Math.abs(bottomRight.x - topLeft.x);
-  const faceHeight = Math.abs(bottomRight.y - topLeft.y);
-  const size = Math.max(faceWidth, faceHeight) * 0.65;
-
-  let centerX = faceLeft + faceWidth / 2;
-  const leftEye = face.landmarks?.LEFT_EYE;
-  const rightEye = face.landmarks?.RIGHT_EYE;
-
-  if (leftEye && rightEye) {
-    const mappedLeftEye = map(leftEye);
-    const mappedRightEye = map(rightEye);
-    centerX = (mappedLeftEye.x + mappedRightEye.x) / 2;
-  }
-
-  const rollAngle = face.rollAngle ?? 0;
-  const correctedRollAngle = options?.isMirrored ? -rollAngle : rollAngle;
+  const maxPokemonSize = Math.min(screenWidth, screenHeight) * MAX_POKEMON_SIZE_RATIO;
+  const size = clamp(faceWidth / POKEMON_SIZE_DIVISOR, MIN_POKEMON_SIZE, maxPokemonSize);
+  const left = clamp(
+    mirroredX + faceWidth / 2 - size / 2,
+    0,
+    Math.max(screenWidth - size, 0),
+  );
+  const top = clamp(
+    faceY - size * FOREHEAD_Y_OFFSET + faceHeight * 0.12,
+    0,
+    Math.max(screenHeight - size, 0),
+  );
 
   return {
     width: size,
     height: size,
-    left: centerX - size / 2,
-    top: faceTop + faceHeight * 0.1 - size / 2,
-    transform: [{ rotate: `${correctedRollAngle}deg` }],
+    left,
+    top,
   };
 };

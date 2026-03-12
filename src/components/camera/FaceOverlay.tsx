@@ -35,7 +35,6 @@ export const FaceOverlay = ({ faces, frameDimensions }: FaceOverlayProps) => {
           screenHeight,
           frameDimensions.width,
           frameDimensions.height,
-          { isMirrored: true },
         );
 
         const previous = previousPositionsRef.current[index];
