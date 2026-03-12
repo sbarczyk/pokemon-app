@@ -12,3 +12,4 @@ export type DetailHeaderProps = {
   isFavorite: boolean;
   onToggleFavorite: () => void;
 };
+ 

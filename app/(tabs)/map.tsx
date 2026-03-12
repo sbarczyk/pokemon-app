@@ -1,31 +1,39 @@
-import { View, StyleSheet, ActivityIndicator, Image, Dimensions } from 'react-native';
-import { useMemo, useRef, useState, useEffect, useCallback } from 'react';
-import MapView, { LongPressEvent, Marker } from 'react-native-maps';
+import { View, StyleSheet, Alert } from 'react-native';
+import { useMemo, useRef, useState, useCallback } from 'react';
+import MapView, { LongPressEvent } from 'react-native-maps';
 import { BottomSheetModal, BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import ViewShot from 'react-native-view-shot';
 
-import PokemonPin from '../../src/types/pokemonPin';
-import { savePokemonPinsToStorage, getPokemonPinsFromStorage } from '../../src/services/pinPokemon';
-import { getPokemonDetailsById } from '../../src/services/pokeapi';
-import { getPokemonImageUrl } from '../../src/utils/pokemon';
-
+import FloatingActionButton from '../../src/components/common/FloatingActionButton';
+import FetchingPinOverlay from '../../src/components/map/FetchingPinOverlay';
+import { normalizeFilePathToUri, saveUriToGallery } from '../../src/services/mediaLibrary';
 import MapBottomSheet from '../../src/components/map/MapBottomSheet';
+import PokemonMapMarker from '../../src/components/map/PokemonMapMarker';
 import { useTheme } from '../../src/context/ThemeContext';
+import { usePokemonPins } from '../../src/hooks/usePokemonPins';
+import { getPokemonDetailsById } from '../../src/services/pokeapi';
+import PokemonPin from '../../src/types/pokemonPin';
 
 const randomPokemonId = () => Math.floor(Math.random() * 1025) + 1;
+const MAP_CAPTURE_DELAY_MS = 400;
+const INITIAL_REGION = {
+  latitude: 50.048659,
+  longitude: 19.96548,
+  latitudeDelta: 0.01,
+  longitudeDelta: 0.01,
+};
 
 export default function MapScreen() {
   const { colors } = useTheme();
-  const [pokemonPins, setPokemonPins] = useState<PokemonPin[]>([]);
+  const captureRef = useRef<ViewShot>(null);
   const [selectedPin, setSelectedPin] = useState<PokemonPin | null>(null);
   const [fetchingPin, setFetchingPin] = useState(false);
+  const [isMapReady, setIsMapReady] = useState(false);
+  const { pokemonPins, addPin, removePin } = usePokemonPins();
 
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ['55%', '92%'], []);
-
-  useEffect(() => {
-    getPokemonPinsFromStorage().then(setPokemonPins);
-  }, []);
 
   const handleLongPress = async (event: LongPressEvent) => {
     const { coordinate } = event.nativeEvent;
@@ -38,9 +46,7 @@ export default function MapScreen() {
         longitude: coordinate.longitude,
         pokemonDetails: details,
       };
-      const updatedPins = [...pokemonPins, newPin];
-      setPokemonPins(updatedPins);
-      await savePokemonPinsToStorage(updatedPins);
+      await addPin(newPin);
     } catch (e) {
       console.error(e);
     } finally {
@@ -54,55 +60,71 @@ export default function MapScreen() {
   }, []);
 
   const handleUnpin = async (id: number) => {
-    const updatedPins = pokemonPins.filter((p) => p.id !== id);
-    setPokemonPins(updatedPins);
-    await savePokemonPinsToStorage(updatedPins);
+    await removePin(id);
     bottomSheetRef.current?.close();
     setSelectedPin(null);
+  };
+
+  const handleSaveMap = async () => {
+    try {
+      if (!isMapReady) {
+        Alert.alert('Mapa się ładuje', 'Poczekaj chwilę, aż mapa w pełni się wyrenderuje.');
+        return;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, MAP_CAPTURE_DELAY_MS));
+
+      const snapshotUri = await captureRef.current?.capture?.();
+
+      if (!snapshotUri) {
+        Alert.alert('Błąd zapisu', 'Nie udało się zapisać mapy.');
+        return;
+      }
+
+      const saved = await saveUriToGallery(normalizeFilePathToUri(snapshotUri));
+      if (!saved) {
+        Alert.alert('Brak uprawnień', 'Nadaj dostęp do zdjęć, aby zapisać mapę.');
+        return;
+      }
+
+      Alert.alert('Zapisano', 'Mapa została zapisana w galerii.');
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Błąd', 'Wystąpił problem podczas zapisu mapy.');
+    }
   };
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <BottomSheetModalProvider>
         <View style={[styles.container, { backgroundColor: colors.background }]}>
-          <MapView
-            style={styles.map}
-            onLongPress={handleLongPress}
-            initialRegion={{
-              latitude: 50.048659,
-              longitude: 19.965480,
-              latitudeDelta: 0.01,
-              longitudeDelta: 0.01,
-            }}
+          <ViewShot
+            ref={captureRef}
+            style={styles.mapCapture}
+            options={{ format: 'png', quality: 1, result: 'tmpfile' }}
           >
-            {pokemonPins.map((pin) => (
-              <Marker
-                key={pin.id}
-                coordinate={{ latitude: pin.latitude, longitude: pin.longitude }}
-                onPress={() => handleMarkerPress(pin)}
-              >
-                <View style={[styles.markerContainer, { backgroundColor: colors.card }]}>
-                  <Image 
-                    source={{ uri: getPokemonImageUrl(pin.pokemonDetails) }} 
-                    style={styles.pokemonMarkerImage} 
-                  />
-                </View>
-              </Marker>
-            ))}
-          </MapView>
+            <MapView
+              style={styles.map}
+              onLongPress={handleLongPress}
+              onMapReady={() => setIsMapReady(true)}
+              initialRegion={INITIAL_REGION}
+            >
+              {pokemonPins.map((pin) => (
+                <PokemonMapMarker key={pin.id} pin={pin} onPress={handleMarkerPress} />
+              ))}
+            </MapView>
+          </ViewShot>
 
-          <MapBottomSheet 
-            ref={bottomSheetRef} 
-            selectedPin={selectedPin} 
+          <FloatingActionButton label="Zapisz mapę" onPress={handleSaveMap} position="topRight" />
+
+          <MapBottomSheet
+            ref={bottomSheetRef}
+            selectedPin={selectedPin}
             snapPoints={snapPoints}
             onUnpin={handleUnpin}
           />
 
-          {fetchingPin && (
-            <View style={[styles.fetchingOverlay, { backgroundColor: colors.background + 'E6' }]}>
-              <ActivityIndicator size="large" color="#3B4CCA" />
-            </View>
-          )}
+          {fetchingPin && <FetchingPinOverlay />}
         </View>
       </BottomSheetModalProvider>
     </GestureHandlerRootView>
@@ -111,21 +133,6 @@ export default function MapScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  mapCapture: { flex: 1 },
   map: { flex: 1 },
-  fetchingOverlay: {
-    backgroundColor: 'rgba(255,255,255,0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  markerContainer: {
-    borderRadius: 25,
-    padding: 4,
-    borderWidth: 2,
-    borderColor: '#3B4CCA',
-    elevation: 4,
-  },
-  pokemonMarkerImage: {
-    width: 40,
-    height: 40,
-  },
 });

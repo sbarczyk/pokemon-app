@@ -44,6 +44,12 @@
         }
       ],
       [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow $(PRODUCT_NAME) to save photos to your library."
+        }
+      ],
+      [
         "expo-build-properties",
          {
           "android": {

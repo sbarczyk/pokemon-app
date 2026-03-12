@@ -1,12 +1,29 @@
-import { View, Text, StyleSheet } from 'react-native';
-import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
-import { useEffect } from 'react';
-import { useTheme } from '../../src/context/ThemeContext';
+import { StyleSheet, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { useIsFocused } from '@react-navigation/native';
+import { useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
+
+import CameraPreview from '../../src/components/camera/CameraPreview';
+import CameraStatusMessage from '../../src/components/camera/CameraStatusMessage';
+import { useFaceTracking } from '../../src/hooks/useFaceTracking';
 
 export default function CameraScreen() {
-  const { colors } = useTheme();
+  const isFocused = useIsFocused();
   const device = useCameraDevice('front');
   const { hasPermission, requestPermission } = useCameraPermission();
+
+  const [cameraReady, setCameraReady] = useState(false);
+  const { detectedFaces, frameDimensions, frameProcessor } = useFaceTracking();
+
+  useEffect(() => {
+    if (!isFocused) {
+      setCameraReady(false);
+      return;
+    }
+
+    const timeout = setTimeout(() => setCameraReady(true), 300);
+    return () => clearTimeout(timeout);
+  }, [isFocused]);
 
   useEffect(() => {
     if (!hasPermission) {
@@ -15,44 +32,28 @@ export default function CameraScreen() {
   }, [hasPermission, requestPermission]);
 
   if (!device) {
-    return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <Text style={[styles.text, { color: colors.text }]}>No camera device found</Text>
-      </View>
-    );
+    return <CameraStatusMessage message="Nie znaleziono aparatu." />;
   }
 
   if (!hasPermission) {
-    return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <Text style={[styles.text, { color: colors.text }]}>No permission to access camera</Text>
-      </View>
-    );
+    return <CameraStatusMessage message="Brak uprawnień do aparatu." />;
   }
 
+  const isActive = isFocused && cameraReady;
+
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Camera
-        style={styles.camera}
+    <View style={styles.container}>
+      <CameraPreview
         device={device}
-        isActive={true}
+        isActive={isActive}
+        frameProcessor={frameProcessor}
+        detectedFaces={detectedFaces}
+        frameDimensions={frameDimensions}
       />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  camera: {
-    width: '100%',
-    height: '100%',
-  },
-  text: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
+  container: { flex: 1, backgroundColor: 'black' },
 });
