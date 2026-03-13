@@ -1,9 +1,15 @@
+import { useEffect } from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../src/context/ThemeContext';
+import { getSavedPhotosFromStorage } from '../../src/services/savedPhotos';
 
 export default function TabsLayout() {
-  const { isDark, colors } = useTheme();
+  const { colors } = useTheme();
+
+  useEffect(() => {
+    getSavedPhotosFromStorage();
+  }, []);
   return (
     <Tabs
       screenOptions={{

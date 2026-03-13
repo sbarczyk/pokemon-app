@@ -1,4 +1,4 @@
-import { ComponentProps } from 'react';
+import { ComponentProps, forwardRef } from 'react';
 import { StyleSheet } from 'react-native';
 import { Camera, CameraDevice, CameraRuntimeError } from 'react-native-vision-camera';
 import { Face } from 'react-native-vision-camera-face-detector';
@@ -17,21 +17,26 @@ type CameraPreviewProps = {
   onError: (error: CameraRuntimeError) => void;
 };
 
-export default function CameraPreview({
-  device,
-  isActive,
-  frameProcessor,
-  detectedFaces,
-  frameDimensions,
-  onInitialized,
-  onError,
-}: CameraPreviewProps) {
+const CameraPreview = forwardRef<Camera, CameraPreviewProps>(function CameraPreview(
+  {
+    device,
+    isActive,
+    frameProcessor,
+    detectedFaces,
+    frameDimensions,
+    onInitialized,
+    onError,
+  },
+  ref,
+) {
   return (
     <>
       <Camera
+        ref={ref}
         style={StyleSheet.absoluteFill}
         device={device}
         isActive={isActive}
+        photo={true}
         frameProcessor={frameProcessor}
         onInitialized={onInitialized}
         onError={onError}
@@ -43,4 +48,6 @@ export default function CameraPreview({
       {detectedFaces.length > 0 && <FaceDetectedBadge />}
     </>
   );
-}
+});
+
+export default CameraPreview;

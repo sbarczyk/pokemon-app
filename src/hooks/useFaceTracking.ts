@@ -8,13 +8,12 @@ import {
 import { Worklets } from 'react-native-worklets-core';
 
 import { FrameDimensions } from '../types/camera';
-import { Dimensions } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLayoutConstants } from '../constants/constants';
 
 export function useFaceTracking() {
   const [detectedFaces, setDetectedFaces] = useState<Face[]>([]);
   const [frameDimensions, setFrameDimensions] = useState<FrameDimensions | null>(null);
+  const { SCREEN_WIDTH, SCREEN_HEIGHT } = useLayoutConstants();
 
   const faceDetectionOptions = useMemo<FrameFaceDetectionOptions>(() => ({
     performanceMode: 'fast',
@@ -22,9 +21,9 @@ export function useFaceTracking() {
     classificationMode: 'none',
     cameraFacing: 'front',
     autoMode: true,
-    windowWidth: useLayoutConstants().SCREEN_WIDTH,
-    windowHeight: useLayoutConstants().SCREEN_HEIGHT,
-  }), [useSafeAreaInsets().bottom]);
+    windowWidth: SCREEN_WIDTH,
+    windowHeight: SCREEN_HEIGHT,
+  }), [SCREEN_WIDTH, SCREEN_HEIGHT]);
 
   const { detectFaces, stopListeners } = useFaceDetector(useMemo(() => faceDetectionOptions, []));
 
