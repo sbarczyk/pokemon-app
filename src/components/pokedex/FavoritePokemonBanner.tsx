@@ -8,8 +8,7 @@ export default function FavoritePokemonBanner({
   onRemove,
   onSeeDetails,
 }: FavoritePokemonBannerProps) {
-  const { colors, isDark } = useTheme();
-  const removeButtonBg = isDark ? colors.border : colors.text;
+  const { colors } = useTheme();
   if (!favoritePokemon) return null;
 
   return (
@@ -30,18 +29,32 @@ export default function FavoritePokemonBanner({
       </View>
       <View style={styles.favoriteActions}>
         <Pressable
-          style={[styles.favoriteButton, styles.detailsButton]}
+          style={[
+            styles.favoriteButton,
+            styles.detailsButton,
+            { backgroundColor: colors.button },
+          ]}
           onPress={onSeeDetails}
         >
-          <Text style={[styles.favoriteButtonText, styles.detailsButtonText]}>
+          <Text style={[styles.favoriteButtonText, { color: '#fff' }]}>
             See details
           </Text>
         </Pressable>
         <Pressable
-          style={[styles.favoriteButton, styles.removeButton, { backgroundColor: removeButtonBg }]}
+          style={[
+            styles.favoriteButton,
+            styles.removeButton,
+            {
+              backgroundColor: colors.card,
+              borderWidth: 1,
+              borderColor: colors.border,
+            },
+          ]}
           onPress={onRemove}
         >
-          <Text style={[styles.favoriteButtonText, styles.removeButtonText]}>Remove</Text>
+          <Text style={[styles.favoriteButtonText, { color: colors.text }]}>
+            Remove
+          </Text>
         </Pressable>
       </View>
     </View>
@@ -101,18 +114,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 10,
   },
-  detailsButton: {
-    backgroundColor: '#0f0f0f',
-  },
+  detailsButton: {},
   removeButton: {},
   favoriteButtonText: {
     fontSize: 12,
     fontWeight: '600',
-  },
-  detailsButtonText: {
-    color: '#fff',
-  },
-  removeButtonText: {
-    color: '#fff',
   },
 });

@@ -1,6 +1,6 @@
 import { Face } from 'react-native-vision-camera-face-detector';
 
-import { useLayoutConstants } from '../constants/layout';
+import { useLayoutConstants } from '../constants/constants';
 import { OverlayPosition } from '../types/camera';
 
 const MIN_SIZE = 56;

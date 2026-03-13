@@ -1,8 +1,7 @@
 import { View, StyleSheet, Alert } from 'react-native';
 import { useMemo, useRef, useState, useCallback } from 'react';
 import MapView, { LongPressEvent } from 'react-native-maps';
-import { BottomSheetModal, BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import ViewShot from 'react-native-view-shot';
 
 import FloatingActionButton from '../../src/components/common/FloatingActionButton';
@@ -95,39 +94,35 @@ export default function MapScreen() {
   };
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <BottomSheetModalProvider>
-        <View style={[styles.container, { backgroundColor: colors.background }]}>
-          <ViewShot
-            ref={captureRef}
-            style={styles.mapCapture}
-            options={{ format: 'png', quality: 1, result: 'tmpfile' }}
-          >
-            <MapView
-              style={styles.map}
-              onLongPress={handleLongPress}
-              onMapReady={() => setIsMapReady(true)}
-              initialRegion={INITIAL_REGION}
-            >
-              {pokemonPins.map((pin) => (
-                <PokemonMapMarker key={pin.id} pin={pin} onPress={handleMarkerPress} />
-              ))}
-            </MapView>
-          </ViewShot>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <ViewShot
+        ref={captureRef}
+        style={styles.mapCapture}
+        options={{ format: 'png', quality: 1, result: 'tmpfile' }}
+      >
+        <MapView
+          style={styles.map}
+          onLongPress={handleLongPress}
+          onMapReady={() => setIsMapReady(true)}
+          initialRegion={INITIAL_REGION}
+        >
+          {pokemonPins.map((pin) => (
+            <PokemonMapMarker key={pin.id} pin={pin} onPress={handleMarkerPress} />
+          ))}
+        </MapView>
+      </ViewShot>
 
-          <FloatingActionButton label="Zapisz mapę" onPress={handleSaveMap} position="topRight" />
+      <FloatingActionButton label="Zapisz mapę" onPress={handleSaveMap} position="topRight" />
 
-          <MapBottomSheet
-            ref={bottomSheetRef}
-            selectedPin={selectedPin}
-            snapPoints={snapPoints}
-            onUnpin={handleUnpin}
-          />
+      <MapBottomSheet
+        ref={bottomSheetRef}
+        selectedPin={selectedPin}
+        snapPoints={snapPoints}
+        onUnpin={handleUnpin}
+      />
 
-          {fetchingPin && <FetchingPinOverlay />}
-        </View>
-      </BottomSheetModalProvider>
-    </GestureHandlerRootView>
+      {fetchingPin && <FetchingPinOverlay />}
+    </View>
   );
 }
 

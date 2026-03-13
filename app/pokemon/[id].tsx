@@ -1,31 +1,38 @@
-import React, { useCallback, useMemo, useRef } from 'react';
-import { View, Text, Image, ActivityIndicator, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useCallback, useRef, useEffect } from 'react';
+import { View, ActivityIndicator, StyleSheet, Platform } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import BottomSheet, {
-  BottomSheetBackdrop,
-  BottomSheetScrollView,
-} from '@gorhom/bottom-sheet';
+import { FullWindowOverlay } from 'react-native-screens';
+import { BottomSheetModal, BottomSheetModalProvider, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
+import type { ReactNode } from 'react';
 
 import { usePokemonDetails } from '../../src/hooks/usePokemonDetails';
 import { useTheme } from '../../src/context/ThemeContext';
-import { DetailHeader } from '../../src/components/details/DetailHeader';
-import { DetailStats } from '../../src/components/details/DetailsStats';
+import DetailsModal from '../../src/components/details/DetailsModal';
 import { FavoriteActionButton } from '../../src/components/details/FavoriteActionButton';
+import { getPokemonImageUrl } from '../../src/utils/pokemon';
 
-export default function PokemonDetailsModal() {
-  const { id } = useLocalSearchParams();
+const ModalContainer = ({ children }: { children?: ReactNode }) =>
+  Platform.OS === 'ios' ? (
+    <FullWindowOverlay>{children}</FullWindowOverlay>
+  ) : (
+    <>{children}</>
+  );
+
+export default function PokemonDetailsScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { colors } = useTheme();
   const { pokemon, loading, isFavorite, handleSetAsFavorite } =
     usePokemonDetails(id);
 
-  const bottomSheetRef = useRef<BottomSheet>(null);
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
 
-  const snapPoints = useMemo(() => ['43%', '90%'], []);
+  const handleDismiss = useCallback(() => {
+    router.back();
+  }, [router]);
 
   const renderBackdrop = useCallback(
-    (props: any) => (
+    (props: React.ComponentProps<typeof BottomSheetBackdrop>) => (
       <BottomSheetBackdrop
         {...props}
         appearsOnIndex={0}
@@ -36,14 +43,13 @@ export default function PokemonDetailsModal() {
     [],
   );
 
-  const handleSheetChanges = useCallback(
-    (index: number) => {
-      if (index === -1) {
-        router.back();
-      }
-    },
-    [router],
-  );
+  useEffect(() => {
+    if (!pokemon) return;
+    const t = setTimeout(() => {
+      bottomSheetRef.current?.present();
+    }, 50);
+    return () => clearTimeout(t);
+  }, [pokemon]);
 
   if (loading || !pokemon) {
     return (
@@ -53,70 +59,49 @@ export default function PokemonDetailsModal() {
     );
   }
 
+  const actionButton = (
+    <View style={styles.favoriteButtonWrapper}>
+      <FavoriteActionButton
+        isFavorite={isFavorite}
+        onPress={handleSetAsFavorite}
+      />
+    </View>
+  );
+
+  const modalContent = (
+    <DetailsModal
+      ref={bottomSheetRef}
+      pokemon={pokemon}
+      imageUri={getPokemonImageUrl(pokemon)}
+      actionButton={actionButton}
+      onDismiss={handleDismiss}
+      backdropComponent={renderBackdrop}
+      containerComponent={ModalContainer}
+    />
+  );
+
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'left', 'right', 'bottom']}>
-      <BottomSheet
-        ref={bottomSheetRef}
-        index={0}
-        snapPoints={snapPoints}
-        onChange={handleSheetChanges}
-        backdropComponent={renderBackdrop}
-        enablePanDownToClose
-        handleIndicatorStyle={[styles.handleIndicator, { backgroundColor: colors.text }]}
-        backgroundStyle={[styles.sheetBackground, { backgroundColor: colors.card }]}
-      >
-        <BottomSheetScrollView contentContainerStyle={styles.scrollContent}>
-          <DetailHeader name={pokemon.name} types={pokemon.types} />
-
-          <View style={styles.imageContainer}>
-            <Image
-              source={{
-                uri: pokemon.sprites.other?.['official-artwork'].front_default,
-              }}
-              style={styles.mainImage}
-            />
-          </View>
-
-          <DetailStats pokemon={pokemon} />
-
-          <FavoriteActionButton
-            isFavorite={isFavorite}
-            onPress={handleSetAsFavorite}
-          />
-        </BottomSheetScrollView>
-      </BottomSheet>
-    </SafeAreaView>
+    <View style={styles.container}>
+      {Platform.OS === 'android' ? (
+        <BottomSheetModalProvider>{modalContent}</BottomSheetModalProvider>
+      ) : (
+        modalContent
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: 'transparent',
   },
   loaderContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  sheetBackground: {
-    backgroundColor: 'white',
-    borderRadius: 32,
-  },
-  handleIndicator: {
-    backgroundColor: '#000',
-    width: 40,
-  },
-  scrollContent: {
-    paddingHorizontal: 24,
-    paddingBottom: 40,
-  },
-  imageContainer: {
-    alignItems: 'center',
-    marginVertical: 20,
-  },
-  mainImage: {
-    width: 180,
-    height: 180,
-    resizeMode: 'contain',
+  favoriteButtonWrapper: {
+    marginTop: 0,
   },
 });
