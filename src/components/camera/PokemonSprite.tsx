@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Image, StyleSheet } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -31,18 +31,20 @@ export function PokemonSprite({ face }: Props) {
 
   const { left, top, width, rotateDeg } = calculatePokemonPosition(face);
 
-  if (isFirstRender.current) {
-    leftSV.value = left;
-    topSV.value = top;
-    sizeSV.value = width;
-    rotationSV.value = rotateDeg;
-    isFirstRender.current = false;
-  } else {
-    leftSV.value = withSpring(left, SPRING_CONFIG);
-    topSV.value = withSpring(top, SPRING_CONFIG);
-    sizeSV.value = withSpring(width, SPRING_CONFIG);
-    rotationSV.value = withSpring(rotateDeg, SPRING_CONFIG);
-  }
+  useEffect(() => {
+    if (isFirstRender.current) {
+      leftSV.value = left;
+      topSV.value = top;
+      sizeSV.value = width;
+      rotationSV.value = rotateDeg;
+      isFirstRender.current = false;
+    } else {
+      leftSV.value = withSpring(left, SPRING_CONFIG);
+      topSV.value = withSpring(top, SPRING_CONFIG);
+      sizeSV.value = withSpring(width, SPRING_CONFIG);
+      rotationSV.value = withSpring(rotateDeg, SPRING_CONFIG);
+    }
+  }, [left, top, width, rotateDeg]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     left: leftSV.value,
