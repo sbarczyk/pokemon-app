@@ -55,7 +55,7 @@ export default function CameraScreen() {
     if (status !== 'granted') {
       const { status: newStatus } = await Location.requestForegroundPermissionsAsync();
       if (newStatus !== 'granted') {
-        Alert.alert('Brak lokalizacji', 'Zezwól na GPS w ustawieniach.');
+        Alert.alert('No location', 'Allow GPS in settings.');
         return;
       }
     }
@@ -107,12 +107,12 @@ export default function CameraScreen() {
       console.error(error);
       setIsCapturing(false);
       setLoadingPhase(null);
-      Alert.alert('Błąd', 'Nie udało się zapisać zdjęcia.');
+      Alert.alert('Error', 'Failed to save photo.');
     }
   }, [addPhoto, updatePhoto, isCapturing]);
 
-  if (!device) return <CameraStatusMessage message="Nie znaleziono aparatu." />;
-  if (!hasPermission) return <CameraStatusMessage message="Brak uprawnień do aparatu." />;
+  if (!device) return <CameraStatusMessage message="Camera not found." />;
+  if (!hasPermission) return <CameraStatusMessage message="No camera permission." />;
 
   const isActive = isFocused && isForeground && isCameraInitialized;
 
@@ -137,7 +137,7 @@ export default function CameraScreen() {
       )}
 
       <FloatingActionButton
-        label={isCapturing ? '...' : 'Zrób zdjęcie'}
+        label={isCapturing ? '...' : 'Take photo'}
         onPress={handleTakePhoto}
         position="bottomCenter"
       />

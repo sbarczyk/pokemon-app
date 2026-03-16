@@ -53,6 +53,6 @@ export const PhotosProvider = ({ children }: { children: React.ReactNode }) => {
 
 export const usePhotos = () => {
   const context = useContext(PhotosContext);
-  if (!context) throw new Error('usePhotos musi być użyty wewnątrz PhotosProvider');
+  if (!context) throw new Error('usePhotos must be used within PhotosProvider');
   return context;
 };

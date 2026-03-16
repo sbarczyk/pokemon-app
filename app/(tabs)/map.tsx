@@ -122,7 +122,7 @@ export default function MapScreen() {
   const handleSaveMap = async () => {
     try {
       if (!isMapReady) {
-        Alert.alert('Mapa się ładuje', 'Poczekaj chwilę...');
+        Alert.alert('Map is loading', 'Please wait a moment...');
         return;
       }
       await new Promise((resolve) => setTimeout(resolve, MAP_CAPTURE_DELAY_MS));
@@ -132,12 +132,12 @@ export default function MapScreen() {
 
       const saved = await saveUriToGallery(normalizeFilePathToUri(snapshotUri));
       if (!saved) {
-        Alert.alert('Brak uprawnień', 'Nadaj dostęp do zdjęć w ustawieniach.');
+        Alert.alert('Permission denied', 'Grant photo access in settings.');
         return;
       }
-      Alert.alert('Zapisano', 'Mapa została zapisana w galerii.');
+      Alert.alert('Saved', 'Map has been saved to gallery.');
     } catch (error) {
-      Alert.alert('Błąd', 'Wystąpił problem podczas zapisu mapy.');
+      Alert.alert('Error', 'An error occurred while saving the map.');
     }
   };
 
@@ -169,7 +169,7 @@ export default function MapScreen() {
       </ViewShot>
 
       <FloatingActionButton 
-        label="Zapisz mapę" 
+        label="Save map" 
         onPress={handleSaveMap} 
         position="topRight" 
       />

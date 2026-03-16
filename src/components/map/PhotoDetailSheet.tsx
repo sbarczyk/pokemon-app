@@ -153,9 +153,9 @@ const PhotoDetailSheet = forwardRef<BottomSheetModal, Props>(
                   <Ionicons name="location" size={16} color="#3B4CCA" />
                 </View>
                 <View>
-                  <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Lokalizacja</Text>
+                  <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Location</Text>
                   <Text style={[styles.infoValue, { color: colors.text }]}>
-                    {currentPhoto?.latitude === 0 ? 'Pobieranie...' : 
+                    {currentPhoto?.latitude === 0 ? 'Loading...' : 
                       `${currentPhoto?.latitude.toFixed(6)}, ${currentPhoto?.longitude.toFixed(6)}`}
                   </Text>
                 </View>
@@ -168,7 +168,7 @@ const PhotoDetailSheet = forwardRef<BottomSheetModal, Props>(
               activeOpacity={0.8}
             >
               <Ionicons name="trash" size={18} color="#FF4B4B" />
-              <Text style={styles.removeButtonText}>Usuń to zdjęcie</Text>
+              <Text style={styles.removeButtonText}>Remove this photo</Text>
             </TouchableOpacity>
           </View>
         </BottomSheetView>
