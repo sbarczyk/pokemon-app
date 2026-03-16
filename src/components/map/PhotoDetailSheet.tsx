@@ -9,22 +9,20 @@ import {
   useWindowDimensions,
   ActivityIndicator,
 } from 'react-native';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useTheme } from '../../context/ThemeContext';
 import type { SavedPhoto } from '../../types/savedPhoto';
 
-const BOTTOM_PADDING_BASE = 24;
 const HORIZONTAL_PADDING = 24;
-const SLIDE_GAP = 20;
-const IMAGE_RADIUS = 16;
+const SLIDE_GAP = 12;
+const IMAGE_RADIUS = 20;
 
 type Props = {
   photos: SavedPhoto[] | null;
   onRemove: (id: number, galleryUri?: string) => void;
-  snapPoints: string[];
 };
 
 const PhotoDetailSheet = forwardRef<BottomSheetModal, Props>(
@@ -32,11 +30,12 @@ const PhotoDetailSheet = forwardRef<BottomSheetModal, Props>(
     const { colors } = useTheme();
     const insets = useSafeAreaInsets();
     const { width: screenWidth } = useWindowDimensions();
-    const paddingBottom = BOTTOM_PADDING_BASE + insets.bottom;
+    
+    const imageWidth = screenWidth - (HORIZONTAL_PADDING * 2);
+    const slideTotalWidth = imageWidth + SLIDE_GAP;
+
     const [currentIndex, setCurrentIndex] = useState(0);
     const listRef = useRef<FlatList>(null);
-    const imageWidth = screenWidth - HORIZONTAL_PADDING * 2 - SLIDE_GAP;
-    const slideTotalWidth = imageWidth + SLIDE_GAP;
 
     const safeIndex = Math.min(currentIndex, photos?.length ? photos.length - 1 : 0);
     const currentPhoto = photos?.[safeIndex] ?? null;
@@ -45,50 +44,48 @@ const PhotoDetailSheet = forwardRef<BottomSheetModal, Props>(
       if (photos?.length && safeIndex >= 0) {
         listRef.current?.scrollToOffset({
           offset: safeIndex * slideTotalWidth,
-          animated: false,
+          animated: true,
         });
       }
-    }, [photos?.length, safeIndex, slideTotalWidth]);
+    }, [photos?.length]);
 
-    const onViewableItemsChanged = useCallback(
-      ({ viewableItems }: { viewableItems: { index: number | null }[] }) => {
-        const idx = viewableItems[0]?.index;
-        if (idx != null) setCurrentIndex(idx);
-      },
-      [],
-    );
-    const viewabilityConfig = { viewAreaCoveragePercentThreshold: 80 };
+    const onViewableItemsChanged = useCallback(({ viewableItems }: any) => {
+      const idx = viewableItems[0]?.index;
+      if (idx != null) setCurrentIndex(idx);
+    }, []);
 
     if (!photos?.length) return null;
 
     const dateStr = currentPhoto
       ? new Date(currentPhoto.timestamp).toLocaleString('pl-PL', {
-          dateStyle: 'medium',
-          timeStyle: 'short',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
         })
       : '';
 
     const handleRemove = () => {
       if (!currentPhoto) return;
       onRemove(currentPhoto.id, currentPhoto.localUri);
-      const next = photos.filter((p) => p.id !== currentPhoto.id);
-      if (next.length === 0) (ref as React.RefObject<BottomSheetModal>)?.current?.close();
-      else setCurrentIndex(Math.min(safeIndex, next.length - 1));
+      if (photos.length === 1) {
+        (ref as any)?.current?.dismiss();
+      }
     };
 
     const renderItem = ({ item }: { item: SavedPhoto }) => (
-      <View style={[styles.slide, { width: slideTotalWidth }]}>
-        <View style={[styles.imageWrap, { width: imageWidth, backgroundColor: colors.border }]}>
-          {item.localUri ? (
-            <Image
-              source={{ uri: item.localUri }}
-              style={styles.image}
-              resizeMode="cover"
-            />
-          ) : (
-            <View style={[StyleSheet.absoluteFill, styles.imagePlaceholder, { backgroundColor: colors.border }]}>
-              <ActivityIndicator size="large" color={colors.textSecondary} />
-              <Text style={[styles.placeholderText, { color: colors.textSecondary }]}>Ładowanie…</Text>
+      <View style={{ width: slideTotalWidth, paddingRight: SLIDE_GAP }}>
+        <View style={[styles.imageWrap, { backgroundColor: colors.border }]}>
+          <Image
+            source={{ uri: item.localUri }}
+            style={styles.image}
+            resizeMode="cover"
+          />
+          {item.isProcessing && (
+            <View style={styles.processingOverlay}>
+              <ActivityIndicator size="small" color="#fff" />
+              <Text style={styles.processingText}>Zapisywanie lokalizacji...</Text>
             </View>
           )}
         </View>
@@ -98,153 +95,153 @@ const PhotoDetailSheet = forwardRef<BottomSheetModal, Props>(
     return (
       <BottomSheetModal
         ref={ref}
-        index={0}
-        snapPoints={['58%', '88%']}
+        snapPoints={['93%']}
         enablePanDownToClose
-        enableDynamicSizing={false}
-        backgroundStyle={[styles.background, { backgroundColor: colors.background }]}
-        handleIndicatorStyle={[styles.handle, { backgroundColor: colors.border }]}
+        backgroundStyle={{ backgroundColor: colors.background, borderRadius: 32 }}
+        handleIndicatorStyle={{ backgroundColor: colors.border, width: 40 }}
       >
-        <FlatList<SavedPhoto>
-          ref={listRef}
-          data={photos}
-          renderItem={renderItem}
-          keyExtractor={(item) => String(item.id)}
-          horizontal
-          pagingEnabled={false}
-          decelerationRate="fast"
-          snapToInterval={slideTotalWidth}
-          snapToAlignment="start"
-          bounces={false}
-          overScrollMode="never"
-          showsHorizontalScrollIndicator={false}
-          onViewableItemsChanged={onViewableItemsChanged}
-          viewabilityConfig={viewabilityConfig}
-          getItemLayout={(_data, index) => ({
-            length: slideTotalWidth,
-            offset: slideTotalWidth * index,
-            index,
-          })}
-          style={styles.flatList}
-          contentContainerStyle={styles.flatListContent}
-        />
+        <BottomSheetView style={styles.content}>
+          <FlatList<SavedPhoto>
+            ref={listRef}
+            data={photos}
+            renderItem={renderItem}
+            keyExtractor={(item) => String(item.id)}
+            horizontal
+            decelerationRate="fast"
+            snapToInterval={slideTotalWidth}
+            snapToAlignment="start"
+            disableIntervalMomentum
+            showsHorizontalScrollIndicator={false}
+            onViewableItemsChanged={onViewableItemsChanged}
+            viewabilityConfig={{ viewAreaCoveragePercentThreshold: 60 }}
+            contentContainerStyle={styles.flatListContent}
+            style={styles.flatList}
+          />
 
-        {photos.length > 1 && (
-          <View style={styles.dotsRow}>
-            {photos.map((_, i) => (
-              <View
-                key={i}
-                style={[
-                  styles.dot,
-                  {
-                    backgroundColor: i === safeIndex ? '#3B4CCA' : colors.border,
-                    width: i === safeIndex ? 20 : 8,
-                  },
-                ]}
-              />
-            ))}
-          </View>
-        )}
-
-        <View style={[styles.footer, { paddingBottom, backgroundColor: colors.background }]}>
-          <View style={[styles.metaCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <View style={styles.metaRow}>
-              <Ionicons name="calendar-outline" size={18} color={colors.textSecondary} />
-              <Text style={[styles.metaLabel, { color: colors.textSecondary }]}>Data</Text>
-              <Text style={[styles.metaValue, { color: colors.text }]}>{dateStr}</Text>
+            <View style={styles.dotsRow}>
+              {photos?.map((_, i) => (
+                <View
+                  key={i}
+                  style={[
+                    styles.dot,
+                    {
+                      backgroundColor: i === safeIndex ? '#3B4CCA' : colors.border,
+                      width: i === safeIndex ? 18 : 6,
+                      opacity: i === safeIndex ? 1 : 0.5,
+                    },
+                  ]}
+                />
+              ))}
             </View>
-            <View style={[styles.metaDivider, { backgroundColor: colors.border }]} />
-            <View style={styles.metaRow}>
-              <Ionicons name="location-outline" size={18} color={colors.textSecondary} />
-              <Text style={[styles.metaLabel, { color: colors.textSecondary }]}>Współrzędne</Text>
-              <Text style={[styles.metaValue, styles.metaValueSmall, { color: colors.text }]} numberOfLines={1}>
-                {currentPhoto
-                  ? `${currentPhoto.latitude.toFixed(5)}, ${currentPhoto.longitude.toFixed(5)}`
-                  : '—'}
-              </Text>
-            </View>
-          </View>
 
-          <TouchableOpacity
-            style={[styles.removeButton, { borderColor: '#E53935', backgroundColor: 'transparent' }]}
-            onPress={handleRemove}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="trash-outline" size={20} color="#E53935" />
-            <Text style={styles.removeButtonText}>Usuń zdjęcie z mapy i galerii</Text>
-          </TouchableOpacity>
-        </View>
+          <View style={[styles.footer, { paddingBottom: insets.bottom + 16 }]}>
+            <View style={[styles.infoContainer, { backgroundColor: colors.card }]}>
+              <View style={styles.infoRow}>
+                <View style={styles.iconCircle}>
+                  <Ionicons name="calendar" size={16} color="#3B4CCA" />
+                </View>
+                <View>
+                  <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Data wykonania</Text>
+                  <Text style={[styles.infoValue, { color: colors.text }]}>{dateStr}</Text>
+                </View>
+              </View>
+
+              <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
+              <View style={styles.infoRow}>
+                <View style={styles.iconCircle}>
+                  <Ionicons name="location" size={16} color="#3B4CCA" />
+                </View>
+                <View>
+                  <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Lokalizacja</Text>
+                  <Text style={[styles.infoValue, { color: colors.text }]}>
+                    {currentPhoto?.latitude === 0 ? 'Pobieranie...' : 
+                      `${currentPhoto?.latitude.toFixed(6)}, ${currentPhoto?.longitude.toFixed(6)}`}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={styles.removeButton}
+              onPress={handleRemove}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="trash" size={18} color="#FF4B4B" />
+              <Text style={styles.removeButtonText}>Usuń to zdjęcie</Text>
+            </TouchableOpacity>
+          </View>
+        </BottomSheetView>
       </BottomSheetModal>
     );
   },
 );
 
-PhotoDetailSheet.displayName = 'PhotoDetailSheet';
-
-export default PhotoDetailSheet;
-
 const styles = StyleSheet.create({
-  background: { borderRadius: 24 },
-  handle: { width: 36, height: 4, borderRadius: 2 },
-  flatList: { flexGrow: 0 },
+  content: { flex: 1 },
+  flatList: { flexGrow: 0, marginTop: 12 },
   flatListContent: { paddingHorizontal: HORIZONTAL_PADDING },
-  slide: { marginRight: 0 },
   imageWrap: {
+    resizeMode: 'contain',
     width: '100%',
-    aspectRatio: 1,
+    height: 500,
     borderRadius: IMAGE_RADIUS,
     overflow: 'hidden',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    marginBottom: 4,
   },
-  image: {
-    width: '100%',
-    height: '100%',
-    borderRadius: IMAGE_RADIUS,
-  },
-  imagePlaceholder: {
+  image: { width: '100%', height: '100%',  },
+  processingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
   },
-  placeholderText: { fontSize: 14 },
+  processingText: { color: '#fff', fontSize: 12, fontWeight: '600' },
   dotsRow: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 6,
-    paddingVertical: 12,
+    gap: 5,
+    marginVertical: 16,
   },
-  dot: {
-    height: 8,
-    borderRadius: 4,
+  dot: { height: 6, borderRadius: 3 },
+  footer: { paddingHorizontal: HORIZONTAL_PADDING, flex: 1, justifyContent: 'flex-end' },
+  infoContainer: {
+    borderRadius: 24,
+    padding: 16,
+    marginBottom: 16,
+    gap: 12,
   },
-  footer: {
-    paddingHorizontal: HORIZONTAL_PADDING,
-    paddingTop: 4,
-  },
-  metaCard: {
-    borderRadius: 14,
-    borderWidth: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    marginBottom: 12,
-  },
-  metaRow: {
-    flexDirection: 'row',
+  infoRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  iconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(59, 76, 202, 0.1)',
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: 10,
   },
-  metaLabel: { fontSize: 12, width: 80 },
-  metaValue: { fontSize: 14, fontWeight: '600', flex: 1 },
-  metaValueSmall: { fontSize: 13, fontWeight: '500' },
-  metaDivider: { height: 1, marginVertical: 10, marginLeft: 28 },
+  infoLabel: { fontSize: 11, fontWeight: '500', marginBottom: 2, textTransform: 'uppercase', letterSpacing: 0.5 },
+  infoValue: { fontSize: 14, fontWeight: '600' },
+  divider: { height: 1, width: '100%', opacity: 0.5 },
   removeButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    borderRadius: 14,
-    borderWidth: 1.5,
+    backgroundColor: 'rgba(255, 75, 75, 0.1)',
+    paddingVertical: 16,
+    borderRadius: 20,
     gap: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 75, 75, 0.2)',
   },
-  removeButtonText: { color: '#E53935', fontWeight: '600', fontSize: 15 },
+  removeButtonText: { color: '#FF4B4B', fontWeight: '700', fontSize: 15 },
 });
+
+export default PhotoDetailSheet;

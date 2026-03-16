@@ -15,7 +15,6 @@ const BOTTOM_PADDING_BASE = 24;
 const DEFAULT_SNAP_POINTS = ['55%', '92%'];
 
 export type DetailsModalProps = {
-  /** Gdy null (np. po zamknięciu na mapie), modal zostaje w drzewie, ale treść jest pusta */
   pokemon: PokemonDetails | null;
   imageUri: string;
   actionButton: React.ReactNode;

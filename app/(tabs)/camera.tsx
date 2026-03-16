@@ -14,7 +14,7 @@ import CameraStatusMessage from '../../src/components/camera/CameraStatusMessage
 import FloatingActionButton from '../../src/components/common/FloatingActionButton';
 import { useFaceTracking } from '../../src/hooks/useFaceTracking';
 import { useIsForeground } from '../../src/hooks/useIsForeground';
-import { useSavedPhotos } from '../../src/hooks/useSavedPhotos';
+import { usePhotos } from '../../src/context/PhotosContext';
 import {
   normalizeFilePathToUri,
   savePhotoToGalleryAndGetUri,
@@ -27,9 +27,11 @@ export default function CameraScreen() {
   const { hasPermission, requestPermission } = useCameraPermission();
   const [isCameraInitialized, setIsCameraInitialized] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
+  
   const [loadingPhase, setLoadingPhase] = useState<'photo' | 'location' | null>(null);
+  
   const { detectedFaces, frameDimensions, frameProcessor } = useFaceTracking();
-  const { addPhoto } = useSavedPhotos();
+  const { addPhoto, updatePhoto } = usePhotos();
   const cameraRef = useRef<Camera>(null);
 
   useEffect(() => {
@@ -49,58 +51,68 @@ export default function CameraScreen() {
   const handleTakePhoto = useCallback(async () => {
     if (!cameraRef.current || isCapturing) return;
 
-    const { status } = await Location.requestForegroundPermissionsAsync();
+    const { status } = await Location.getForegroundPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert(
-        'Brak dostępu do lokalizacji',
-        'Aby zapisać zdjęcie z lokalizacją, zezwól na dostęp do lokalizacji.',
-      );
-      return;
-    }
-
-    setIsCapturing(true);
-    try {
-      setLoadingPhase('photo');
-      const photo = await cameraRef.current.takePhoto();
-      const photoUri = normalizeFilePathToUri(photo.path);
-
-      const assetUri = await savePhotoToGalleryAndGetUri(photoUri);
-      if (!assetUri) {
-        Alert.alert('Brak uprawnień', 'Nadaj dostęp do zdjęć, aby zapisać w galerii.');
+      const { status: newStatus } = await Location.requestForegroundPermissionsAsync();
+      if (newStatus !== 'granted') {
+        Alert.alert('Brak lokalizacji', 'Zezwól na GPS w ustawieniach.');
         return;
       }
+    }
 
-      setLoadingPhase('location');
-      const location = await Location.getCurrentPositionAsync({
+    try {
+      setIsCapturing(true);
+      setLoadingPhase('photo');
+
+      const locationPromise = Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
-      });
-      const { latitude, longitude } = location.coords;
+      }).catch(() => null);
 
-      await addPhoto({
-        id: Date.now(),
-        localUri: assetUri,
-        latitude,
-        longitude,
-        timestamp: Date.now(),
+      const photo = await cameraRef.current.takePhoto({
+        flash: 'off',
+        enableShutterSound: true,
       });
 
-      Alert.alert('Zapisano', 'Zdjęcie zapisane w galerii z lokalizacją. Zobaczysz je na mapie.');
-    } catch (error) {
-      console.error(error);
-      Alert.alert('Błąd', 'Nie udało się zapisać zdjęcia.');
-    } finally {
+      const tempId = Date.now();
+      const initialUri = normalizeFilePathToUri(photo.path);
+
+      addPhoto({
+        id: tempId,
+        localUri: initialUri,
+        latitude: 0,
+        longitude: 0,
+        timestamp: tempId,
+      });
+
       setIsCapturing(false);
       setLoadingPhase(null);
+
+      (async () => {
+        try {
+          const [assetUri, location] = await Promise.all([
+            savePhotoToGalleryAndGetUri(initialUri),
+            locationPromise,
+          ]);
+          updatePhoto(tempId, {
+            localUri: assetUri || initialUri,
+            latitude: location?.coords.latitude || 0,
+            longitude: location?.coords.longitude || 0,
+          });
+        } catch (e) {
+          console.error("Background task error:", e);
+        }
+      })();
+
+    } catch (error) {
+      console.error(error);
+      setIsCapturing(false);
+      setLoadingPhase(null);
+      Alert.alert('Błąd', 'Nie udało się zapisać zdjęcia.');
     }
-  }, [addPhoto, isCapturing]);
+  }, [addPhoto, updatePhoto, isCapturing]);
 
-  if (!device) {
-    return <CameraStatusMessage message="Nie znaleziono aparatu." />;
-  }
-
-  if (!hasPermission) {
-    return <CameraStatusMessage message="Brak uprawnień do aparatu." />;
-  }
+  if (!device) return <CameraStatusMessage message="Nie znaleziono aparatu." />;
+  if (!hasPermission) return <CameraStatusMessage message="Brak uprawnień do aparatu." />;
 
   const isActive = isFocused && isForeground && isCameraInitialized;
 
@@ -116,18 +128,16 @@ export default function CameraScreen() {
         onInitialized={onInitialized}
         onError={onError}
       />
-      {isCapturing && loadingPhase && (
+      
+      {isCapturing && (
         <View style={styles.loadingOverlay}>
           <ActivityIndicator size="large" color="#fff" />
-          <Text style={styles.loadingText}>
-            {loadingPhase === 'photo'
-              ? 'Zapisywanie zdjęcia…'
-              : 'Pobieranie lokalizacji…'}
-          </Text>
+          <Text style={styles.loadingText}>Przetwarzanie...</Text>
         </View>
       )}
+
       <FloatingActionButton
-        label={isCapturing ? 'Zapisuję…' : 'Zrób zdjęcie'}
+        label={isCapturing ? '...' : 'Zrób zdjęcie'}
         onPress={handleTakePhoto}
         position="bottomCenter"
       />
@@ -139,7 +149,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: 'black' },
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.7)',
+    backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center',
     alignItems: 'center',
     gap: 12,
@@ -148,5 +158,8 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '500',
+    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
 });

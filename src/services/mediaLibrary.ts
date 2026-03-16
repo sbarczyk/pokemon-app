@@ -6,10 +6,6 @@ export function normalizeFilePathToUri(path: string): string {
   return path.startsWith('file://') ? path : `file://${path}`;
 }
 
-/**
- * Zapisuje zdjęcie w galerii (pamięć telefonu) i zwraca URI do podglądu.
- * Bez kopii w cache – podgląd z galerii.
- */
 export async function savePhotoToGalleryAndGetUri(uri: string): Promise<string | null> {
   if (Platform.OS === 'android' && !(await hasAndroidPhotoPermission())) {
     return null;
@@ -27,11 +23,6 @@ export async function savePhotoToGalleryAndGetUri(uri: string): Promise<string |
   }
 }
 
-/**
- * Usuwa zdjęcie z galerii (pamięć telefonu).
- * URI – ten sam co w SavedPhoto.localUri (zwrócony wcześniej z getPhotos).
- * Na iOS użytkownik może zobaczyć systemowe potwierdzenie usunięcia.
- */
 export async function deletePhotoFromGallery(uri: string): Promise<void> {
   try {
     await CameraRoll.deletePhotos([uri]);
@@ -67,7 +58,6 @@ async function hasAndroidPhotoPermission(): Promise<boolean> {
   return granted === PermissionsAndroid.RESULTS.GRANTED;
 }
 
-/** Zachowane dla kompatybilności z zapisem mapy (expo-media-library). */
 export async function saveUriToGallery(uri: string): Promise<boolean> {
   const { status } = await MediaLibrary.requestPermissionsAsync();
   if (status !== 'granted') return false;

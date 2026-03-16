@@ -3,9 +3,11 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { StatusBar } from 'expo-status-bar';
 import { FavoriteProvider } from '../src/context/FavoriteContext';
+import { PhotosProvider } from '../src/context/PhotosContext';
 import { ThemeProvider } from '../src/context/ThemeContext';
 import { useTheme } from '../src/context/ThemeContext';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+
 
 function RootLayoutContent() {
   const { isDark, colors } = useTheme();
@@ -13,6 +15,7 @@ function RootLayoutContent() {
     <>
     <SafeAreaProvider>
       <StatusBar style={isDark ? 'light' : 'dark'} />
+      <PhotosProvider>
       <FavoriteProvider>
         <BottomSheetModalProvider>
           <Stack screenOptions={{ headerShown: false }}>
@@ -39,6 +42,7 @@ function RootLayoutContent() {
           </Stack>
         </BottomSheetModalProvider>
       </FavoriteProvider>
+    </PhotosProvider>
     </SafeAreaProvider>
     </>
   );
