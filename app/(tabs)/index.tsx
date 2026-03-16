@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -21,17 +21,24 @@ import PokedexHeader from '../../src/components/pokedex/PokedexHeader';
 import PokedexSearchBar from '../../src/components/pokedex/PokedexSearchBar';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useTheme } from '../../src/context/ThemeContext';
-import { getOrientation } from '../../modules/screenorientation';
+import { addOrientationListener, getOrientation } from '../../modules/screen-orientation';
 
 export default function PokedexScreen() {
-  useFocusEffect(useCallback(() => {
-    try{
-      const orientation = getOrientation();
-      console.log('Orientation:', orientation);
-    } catch (error) {
-      console.error('Error getting orientation:', error);
-    }
-  }, []));
+
+
+  useEffect(() => {
+    console.log("Subscription started");
+
+    const subscription = addOrientationListener((event) => {
+      console.log("Oriantation changed to:", event.orientation);
+    });
+
+
+    return () => {
+      subscription.remove();
+      console.log("Subscription removed");
+    };
+  }, []);
   const { pokemon, isRefreshing, isLoadingMore, refreshPokemon, loadMore } =
     usePokemonList();
 

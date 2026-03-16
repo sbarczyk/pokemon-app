@@ -1,9 +1,6 @@
 plugins {
   id 'com.android.library'
   id 'expo-module-gradle-plugin'
-  id 'kotlin-android'
-  id 'org.jetbrains.kotlin.android'
-  
 }
 
 group = 'expo.modules.screenorientation'
