@@ -6,12 +6,10 @@ const STORAGE_KEY = 'saved_camera_photos';
 
 let cached: SavedPhoto[] | null = null;
 
-/** Synchroniczny podgląd cache – do szybkiego initial state (po preload). */
 export function getCachedSavedPhotos(): SavedPhoto[] | null {
   return cached;
 }
 
-/** Odświeża cache i zwraca listę. Wywołaj przy starcie (preload), żeby markery na mapie pojawiły się od razu. */
 export async function getSavedPhotosFromStorage(): Promise<SavedPhoto[]> {
   try {
     const data = await AsyncStorage.getItem(STORAGE_KEY);

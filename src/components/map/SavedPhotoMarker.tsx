@@ -6,7 +6,6 @@ import { useTheme } from '../../context/ThemeContext';
 import type { SavedPhoto } from '../../types/savedPhoto';
 
 type SavedPhotoMarkerProps = {
-  /** Wszystkie zdjęcia w tym samym miejscu (do licznika i sheetu) */
   photos: SavedPhoto[];
   onPress: (photos: SavedPhoto[]) => void;
 };

@@ -11,7 +11,7 @@ import PhotoDetailSheet from '../../src/components/map/PhotoDetailSheet';
 import PokemonMapMarker from '../../src/components/map/PokemonMapMarker';
 import SavedPhotoMarker from '../../src/components/map/SavedPhotoMarker';
 import { useTheme } from '../../src/context/ThemeContext';
-import { usePhotos } from '../../src/context/PhotosContext'; // ZAMIENIONE: używamy Contextu
+import { usePhotos } from '../../src/context/PhotosContext';
 import { usePokemonPins } from '../../src/hooks/usePokemonPins';
 import { normalizeFilePathToUri, saveUriToGallery } from '../../src/services/mediaLibrary';
 import { getPokemonDetailsById } from '../../src/services/pokeapi';
@@ -20,13 +20,9 @@ import type { SavedPhoto } from '../../src/types/savedPhoto';
 
 const randomPokemonId = () => Math.floor(Math.random() * 1025) + 1;
 
-/** * Grupuje zdjęcia po lokalizacji. 
- * Filtr p.latitude !== 0 zapobiega wyświetlaniu zdjęć, które jeszcze pobierają GPS.
- */
 function groupPhotosByLocation(photos: SavedPhoto[]): { key: string; latitude: number; longitude: number; photos: SavedPhoto[] }[] {
   const map = new Map<string, SavedPhoto[]>();
   
-  // Filtrujemy tylko te, które mają już przypisaną lokalizację
   const validPhotos = photos.filter(p => p.latitude !== 0 && p.longitude !== 0);
 
   for (const p of validPhotos) {
@@ -56,7 +52,6 @@ export default function MapScreen() {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const photoSheetRef = useRef<BottomSheetModal>(null);
 
-  // Dane z Contextu (wspólne dla aparatu i mapy)
   const { savedPhotos, removePhoto } = usePhotos(); 
   const { pokemonPins, addPin, removePin } = usePokemonPins();
 
@@ -67,10 +62,8 @@ export default function MapScreen() {
 
   const snapPoints = useMemo(() => ['62%', '90%'], []);
 
-  // Grupowanie zdjęć - reaguje automatycznie na zmiany w Context
   const photoGroups = useMemo(() => groupPhotosByLocation(savedPhotos), [savedPhotos]);
   
-  // Wybór zdjęć do wyświetlenia w wysuwanym arkuszu
   const selectedPhotosForSheet = useMemo(
     () => photoGroups.find((g) => g.key === selectedLocationKey)?.photos ?? null,
     [photoGroups, selectedLocationKey],
@@ -108,7 +101,6 @@ export default function MapScreen() {
 
   const handleRemovePhoto = useCallback(
     async (id: number, galleryUri?: string) => {
-      // Obliczamy czy to było ostatnie zdjęcie w tej grupie przed usunięciem
       const remainingInGroup = selectedPhotosForSheet?.length ?? 0;
       
       await removePhoto(id, galleryUri);
@@ -161,14 +153,11 @@ export default function MapScreen() {
           onLongPress={handleLongPress}
           onMapReady={() => setIsMapReady(true)}
           initialRegion={INITIAL_REGION}
-          // Dodaj style mapy z kolorami Twojego motywu jeśli trzeba
         >
-          {/* Markery Pokemonów */}
           {pokemonPins.map((pin) => (
             <PokemonMapMarker key={pin.id} pin={pin} onPress={handleMarkerPress} />
           ))}
 
-          {/* Markery Zdjęć (Zgrupowane) */}
           {photoGroups.map((group) => (
             <SavedPhotoMarker
               key={group.key}
@@ -185,7 +174,6 @@ export default function MapScreen() {
         position="topRight" 
       />
 
-      {/* Arkusz detali Pokemona */}
       <MapBottomSheet
         ref={bottomSheetRef}
         selectedPin={selectedPin}
@@ -193,7 +181,6 @@ export default function MapScreen() {
         onUnpin={handleUnpin}
       />
 
-      {/* Arkusz detali Zdjęć (Twoja karuzela) */}
       <PhotoDetailSheet
         ref={photoSheetRef}
         photos={selectedPhotosForSheet}
