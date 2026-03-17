@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Image, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Image, StyleSheet, ActivityIndicator } from 'react-native';
 import { DetailHeader } from './DetailHeader';
 import { DetailStats } from './DetailsStats';
 import { useTheme } from '../../context/ThemeContext';
@@ -15,12 +15,24 @@ type Props = {
 };
 
 export function PokemonDetailContent({ pokemon, imageUri, actionButton }: Props) {
-  const { isDark } = useTheme();
+  const { isDark, colors } = useTheme();
   const statsBg = isDark ? STATS_BG_DARK : STATS_BG_LIGHT;
+  const [imageLoading, setImageLoading] = useState(true);
 
   return (
     <>
-      <Image source={{ uri: imageUri }} style={styles.pokemonImage} />
+      <View style={styles.imageContainer}>
+        {imageLoading && (
+          <View style={styles.imageLoader}>
+            <ActivityIndicator size="large" color={colors.text} />
+          </View>
+        )}
+        <Image
+          source={{ uri: imageUri }}
+          style={styles.pokemonImage}
+          onLoadEnd={() => setImageLoading(false)}
+        />
+      </View>
       <DetailHeader name={pokemon.name} types={pokemon.types} />
       <View style={styles.actionWrapper}>{actionButton}</View>
       <View style={[styles.statsWrapper, { backgroundColor: statsBg }]}>
@@ -31,12 +43,22 @@ export function PokemonDetailContent({ pokemon, imageUri, actionButton }: Props)
 }
 
 const styles = StyleSheet.create({
-  pokemonImage: {
+  imageContainer: {
     width: 200,
     height: 200,
     alignSelf: 'center',
     marginBottom: 10,
-    marginTop: 15
+    marginTop: 15,
+    position: 'relative',
+  },
+  imageLoader: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pokemonImage: {
+    width: 200,
+    height: 200,
   },
   actionWrapper: { marginTop: 0, marginBottom: 10 },
   statsWrapper: {

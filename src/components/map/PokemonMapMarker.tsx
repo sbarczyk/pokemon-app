@@ -1,4 +1,5 @@
-import { Image, StyleSheet, View } from 'react-native';
+import { useState } from 'react';
+import { Image, StyleSheet, View, ActivityIndicator } from 'react-native';
 import { Marker } from 'react-native-maps';
 
 import { useTheme } from '../../context/ThemeContext';
@@ -12,6 +13,7 @@ type PokemonMapMarkerProps = {
 
 export default function PokemonMapMarker({ pin, onPress }: PokemonMapMarkerProps) {
   const { colors } = useTheme();
+  const [imageLoading, setImageLoading] = useState(true);
 
   return (
     <Marker
@@ -19,9 +21,15 @@ export default function PokemonMapMarker({ pin, onPress }: PokemonMapMarkerProps
       onPress={() => onPress(pin)}
     >
       <View style={[styles.markerContainer, { backgroundColor: colors.card }]}>
+        {imageLoading && (
+          <View style={styles.loaderWrap}>
+            <ActivityIndicator size="small" color={colors.text} />
+          </View>
+        )}
         <Image
           source={{ uri: getPokemonImageUrl(pin.pokemonDetails) }}
           style={styles.pokemonMarkerImage}
+          onLoadEnd={() => setImageLoading(false)}
         />
       </View>
     </Marker>
@@ -35,6 +43,12 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#3B4CCA',
     elevation: 4,
+    position: 'relative',
+  },
+  loaderWrap: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   pokemonMarkerImage: {
     width: 40,

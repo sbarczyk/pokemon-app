@@ -20,6 +20,45 @@ const HORIZONTAL_PADDING = 24;
 const SLIDE_GAP = 12;
 const IMAGE_RADIUS = 20;
 
+function PhotoSlideItem({
+  item,
+  slideTotalWidth,
+  imageWrapStyle,
+  imageStyle,
+}: {
+  item: SavedPhoto;
+  slideTotalWidth: number;
+  imageWrapStyle: object;
+  imageStyle: object;
+}) {
+  const [imageLoading, setImageLoading] = useState(true);
+  const { colors } = useTheme();
+
+  return (
+    <View style={{ width: slideTotalWidth, paddingRight: SLIDE_GAP }}>
+      <View style={[styles.imageWrap, imageWrapStyle]}>
+        {imageLoading && (
+          <View style={styles.imageLoaderOverlay}>
+            <ActivityIndicator size="large" color={colors.text} />
+          </View>
+        )}
+        <Image
+          source={{ uri: item.localUri }}
+          style={imageStyle}
+          resizeMode="cover"
+          onLoadEnd={() => setImageLoading(false)}
+        />
+        {item.isProcessing && (
+          <View style={styles.processingOverlay}>
+            <ActivityIndicator size="small" color="#fff" />
+            <Text style={styles.processingText}>Zapisywanie lokalizacji...</Text>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+}
+
 type Props = {
   photos: SavedPhoto[] | null;
   onRemove: (id: number, galleryUri?: string) => void;
@@ -75,21 +114,12 @@ const PhotoDetailSheet = forwardRef<BottomSheetModal, Props>(
     };
 
     const renderItem = ({ item }: { item: SavedPhoto }) => (
-      <View style={{ width: slideTotalWidth, paddingRight: SLIDE_GAP }}>
-        <View style={[styles.imageWrap, { backgroundColor: colors.border }]}>
-          <Image
-            source={{ uri: item.localUri }}
-            style={styles.image}
-            resizeMode="cover"
-          />
-          {item.isProcessing && (
-            <View style={styles.processingOverlay}>
-              <ActivityIndicator size="small" color="#fff" />
-              <Text style={styles.processingText}>Zapisywanie lokalizacji...</Text>
-            </View>
-          )}
-        </View>
-      </View>
+      <PhotoSlideItem
+        item={item}
+        slideTotalWidth={slideTotalWidth}
+        imageWrapStyle={{ backgroundColor: colors.border }}
+        imageStyle={styles.image}
+      />
     );
 
     return (
@@ -196,8 +226,15 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     marginBottom: 4,
+    position: 'relative',
   },
-  image: { width: '100%', height: '100%',  },
+  imageLoaderOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.05)',
+  },
+  image: { width: '100%', height: '100%' },
   processingOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.5)',
