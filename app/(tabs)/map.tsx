@@ -1,4 +1,4 @@
-import { View, StyleSheet, Alert } from 'react-native';
+import { View, Text, StyleSheet, Alert } from 'react-native';
 import { useMemo, useRef, useState, useCallback } from 'react';
 import MapView, { LongPressEvent } from 'react-native-maps';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
@@ -17,6 +17,7 @@ import { normalizeFilePathToUri, saveUriToGallery } from '../../src/services/med
 import { getPokemonDetailsById } from '../../src/services/pokeapi';
 import PokemonPin from '../../src/types/pokemonPin';
 import type { SavedPhoto } from '../../src/types/savedPhoto';
+import AnimatedCounterView from '../../modules/animated-counter/src/AnimatedCounterView';
 
 const randomPokemonId = () => Math.floor(Math.random() * 1025) + 1;
 
@@ -67,6 +68,11 @@ export default function MapScreen() {
   const selectedPhotosForSheet = useMemo(
     () => photoGroups.find((g) => g.key === selectedLocationKey)?.photos ?? null,
     [photoGroups, selectedLocationKey],
+  );
+
+  const markerCount = useMemo(
+    () => pokemonPins.length + photoGroups.length,
+    [pokemonPins.length, photoGroups.length],
   );
 
   const handleLongPress = async (event: LongPressEvent) => {
@@ -174,6 +180,13 @@ export default function MapScreen() {
         position="topRight" 
       />
 
+      <View style={[styles.counterContainer, { backgroundColor: colors.card }]}>
+        <Text style={[styles.counterText, { color: colors.text }]}>
+          Aktualna liczba pinów:{' '}
+        </Text>
+        <AnimatedCounterView count={markerCount} style={styles.counterValue} />
+      </View>
+
       <MapBottomSheet
         ref={bottomSheetRef}
         selectedPin={selectedPin}
@@ -196,4 +209,29 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   mapCapture: { flex: 1 },
   map: { flex: 1 },
+  counterContainer: {
+    position: 'absolute',
+    top: 53,
+    left: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    zIndex: 1000,
+    gap: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  counterText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  counterValue: {
+    width: 24,
+    height: 24,
+  },
 });

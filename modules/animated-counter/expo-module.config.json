@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple"],
+  "apple": {
+    "modules": ["AnimatedCounterModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.animatedcounter.AnimatedCounterModule"]
+  }
+}
