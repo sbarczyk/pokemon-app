@@ -1,36 +1,50 @@
 package expo.modules.screenorientation
 
-import android.content.Context
-import android.content.res.Configuration
-import android.content.ComponentCallbacks
+import android.view.OrientationEventListener
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 
 class ScreenOrientationModule : Module() {
-  
-  private val callbacks = object : ComponentCallbacks {
-    override fun onConfigurationChanged(newConfig: Configuration) {
-      val res = if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) "landscape" else "portrait"
-      sendEvent("onChange", mapOf("orientation" to res))
+
+  private var lastOrientation = "unknown"
+
+  private val orientationListener by lazy {
+    object : OrientationEventListener(appContext.reactContext) {
+      override fun onOrientationChanged(orientation: Int) {
+        if (orientation == -1) return
+
+        val newOrientation = when (orientation) {
+          in 45..134 -> "landscape-reversed"
+          in 135..224 -> "portrait-reversed"
+          in 225..314 -> "landscape"
+          else -> "portrait"
+        }
+
+        if (newOrientation != lastOrientation) {
+          lastOrientation = newOrientation
+          println("SCREEN_ORIENTATION_NATIVE: $newOrientation")
+          sendEvent("onChange", mapOf("orientation" to newOrientation))
+        }
+      }
     }
-    override fun onLowMemory() {}
   }
 
   override fun definition() = ModuleDefinition {
     Name("ScreenOrientation")
     Events("onChange")
 
-    Function("getOrientation") {
-      val orientation = appContext.reactContext?.resources?.configuration?.orientation
-      return@Function if (orientation == Configuration.ORIENTATION_LANDSCAPE) "landscape" else "portrait"
-    }
-
     OnStartObserving {
-      appContext.reactContext?.registerComponentCallbacks(callbacks)
+      if (orientationListener.canDetectOrientation()) {
+        orientationListener.enable()
+      }
     }
 
     OnStopObserving {
-      appContext.reactContext?.unregisterComponentCallbacks(callbacks)
+      orientationListener.disable()
+    }
+
+    Function("getOrientation") {
+      return@Function lastOrientation
     }
   }
 }
