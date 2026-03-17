@@ -10,6 +10,8 @@ struct CounterView: View {
       Text("\(count)")
         .font(.system(size: max(fontSize, 10), weight: .bold, design: .rounded).monospacedDigit())
         .foregroundColor(.blue)
+        .lineLimit(1)
+        .minimumScaleFactor(0.5)
         .contentTransition(.numericText(value: Double(count)))
         .animation(.spring(response: 0.4, dampingFraction: 0.6), value: count)
         .frame(maxWidth: .infinity, maxHeight: .infinity)

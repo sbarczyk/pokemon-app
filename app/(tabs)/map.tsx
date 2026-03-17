@@ -6,7 +6,7 @@ import ViewShot from 'react-native-view-shot';
 
 import FloatingActionButton from '../../src/components/common/FloatingActionButton';
 import FetchingPinOverlay from '../../src/components/map/FetchingPinOverlay';
-import MapBottomSheet from '../../src/components/map/MapBottomSheet';
+import MapBottomSheet, { MapBottomSheetProps } from '../../src/components/map/MapBottomSheet';
 import PhotoDetailSheet from '../../src/components/map/PhotoDetailSheet';
 import PokemonMapMarker from '../../src/components/map/PokemonMapMarker';
 import SavedPhotoMarker from '../../src/components/map/SavedPhotoMarker';
@@ -122,8 +122,11 @@ export default function MapScreen() {
   const handleUnpin = async (id: number) => {
     await removePin(id);
     bottomSheetRef.current?.close();
-    setSelectedPin(null);
   };
+
+  const handleSheetDismiss = useCallback(() => {
+    setSelectedPin(null);
+  }, []);
 
   const handleSaveMap = async () => {
     try {
@@ -192,6 +195,7 @@ export default function MapScreen() {
         selectedPin={selectedPin}
         snapPoints={snapPoints}
         onUnpin={handleUnpin}
+        onDismiss={handleSheetDismiss}
       />
 
       <PhotoDetailSheet
@@ -231,7 +235,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   counterValue: {
-    width: 24,
+    minWidth: 40,
+    width: 36,
     height: 24,
   },
 });

@@ -8,14 +8,17 @@ import { getPokemonImageUrl } from '../../utils/pokemon';
 import { useTheme } from '../../context/ThemeContext';
 import DetailsModal from '../details/DetailsModal';
 
-interface Props {
+export interface MapBottomSheetProps {
   selectedPin: PokemonPin | null;
   snapPoints: string[];
   onUnpin: (id: number) => void;
+  onDismiss?: () => void;
 }
 
-const MapBottomSheet = forwardRef<BottomSheetModal, Props>(
-  ({ selectedPin, snapPoints, onUnpin }, ref) => {
+const MapBottomSheet = forwardRef<BottomSheetModal, MapBottomSheetProps>(function MapBottomSheet(
+  { selectedPin, snapPoints, onUnpin, onDismiss },
+  ref
+) {
     const { colors } = useTheme();
 
     const actionButton = selectedPin ? (
@@ -41,10 +44,10 @@ const MapBottomSheet = forwardRef<BottomSheetModal, Props>(
         imageUri={selectedPin ? getPokemonImageUrl(selectedPin.pokemonDetails) : ''}
         actionButton={actionButton}
         snapPoints={snapPoints}
+        onDismiss={onDismiss}
       />
     );
-  }
-);
+});
 
 MapBottomSheet.displayName = 'MapBottomSheet';
 
