@@ -47,7 +47,7 @@ export default function PokemonDetailsScreen() {
     if (!pokemon) return;
     const t = setTimeout(() => {
       bottomSheetRef.current?.present();
-    }, 50);
+    }, 0);
     return () => clearTimeout(t);
   }, [pokemon]);
 

@@ -47,12 +47,17 @@ export function useGlobalPokemonSearch() {
         });
 
         const toFetch = matches.slice(0, MAX_SEARCH_RESULTS);
-        const details = await Promise.all(
-          toFetch.map((p) => getPokemonDetails(p.url)),
-        );
-
-        if (cancelled || lastQueryRef.current !== normalizedQuery) return;
-        setFilteredPokemon(details);
+        const BATCH = 10;
+        const results: PokemonDetails[] = [];
+        for (let i = 0; i < toFetch.length; i += BATCH) {
+          const batch = toFetch.slice(i, i + BATCH);
+          const details = await Promise.all(
+            batch.map((p) => getPokemonDetails(p.url)),
+          );
+          if (cancelled || lastQueryRef.current !== normalizedQuery) return;
+          results.push(...details);
+          setFilteredPokemon([...results]);
+        }
       } catch (e) {
         if (!cancelled) setFilteredPokemon([]);
         console.error('Search failed:', e);

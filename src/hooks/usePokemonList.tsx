@@ -3,6 +3,7 @@ import { PokemonDetails } from '../types/pokemon';
 import { getPokemonList, getPokemonDetails } from '../services/pokeapi';
 
 const PAGE_LIMIT = 20;
+const DETAILS_BATCH_SIZE = 5;
 
 export function usePokemonList() {
   const [pokemon, setPokemon] = useState<PokemonDetails[]>([]);
@@ -33,28 +34,30 @@ export function usePokemonList() {
 
         if (list.length < PAGE_LIMIT) setHasMore(false);
 
-        const details = await Promise.all(
-          list.map((p) => getPokemonDetails(p.url)),
-        );
-
         if (shouldClear) {
           seenPokemonIdsRef.current.clear();
           loadedOffsetsRef.current.clear();
+          setPokemon([]);
         }
 
         loadedOffsetsRef.current.add(currentOffset);
 
-        setPokemon((prev) => {
-          const base = shouldClear ? [] : prev;
-
-          const uniqueNewDetails = details.filter((p) => {
+        const accumulated: PokemonDetails[] = [];
+        for (let i = 0; i < list.length; i += DETAILS_BATCH_SIZE) {
+          const batch = list.slice(i, i + DETAILS_BATCH_SIZE);
+          const details = await Promise.all(
+            batch.map((p) => getPokemonDetails(p.url)),
+          );
+          const uniqueNew = details.filter((p) => {
             if (seenPokemonIdsRef.current.has(p.id)) return false;
             seenPokemonIdsRef.current.add(p.id);
             return true;
           });
-
-          return [...base, ...uniqueNewDetails];
-        });
+          accumulated.push(...uniqueNew);
+          setPokemon((prev) =>
+            shouldClear ? [...accumulated] : [...prev, ...uniqueNew],
+          );
+        }
 
         setOffset(currentOffset);
       } catch (e) {

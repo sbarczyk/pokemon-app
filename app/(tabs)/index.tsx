@@ -14,6 +14,7 @@ import { usePokemonList } from '../../src/hooks/usePokemonList';
 import { useGlobalPokemonSearch } from '../../src/hooks/usePokemonSearch';
 import { useFavorites } from '../../src/context/FavoriteContext';
 import { usePokedexInteractions } from '../../src/hooks/usePokedexInteractions';
+import { setCachedPokemonDetails } from '../../src/services/pokemonDetailCache';
 
 import PokemonCard from '../../src/components/pokedex/PokemonCard';
 import FavoritePokemonBanner from '../../src/components/pokedex/FavoritePokemonBanner';
@@ -63,7 +64,12 @@ export default function PokedexScreen() {
       <FavoritePokemonBanner
         favoritePokemon={favorite}
         onRemove={clearFavorite}
-        onSeeDetails={() => favorite && router.push(`/pokemon/${favorite.id}`)}
+        onSeeDetails={() => {
+          if (favorite) {
+            setCachedPokemonDetails(favorite);
+            router.push(`/pokemon/${favorite.id}`);
+          }
+        }}
       />
 
       <View style={styles.titleRow}>

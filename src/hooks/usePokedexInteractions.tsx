@@ -1,8 +1,10 @@
 import { useRef, useState, useCallback } from 'react';
 import { Animated } from 'react-native';
 import { useRouter } from 'expo-router';
+import { setCachedPokemonDetails } from '../services/pokemonDetailCache';
+import type { PokemonDetails } from '../types/pokemon';
 
-export function usePokedexInteractions(toggleFavorite: (item: any) => void) {
+export function usePokedexInteractions(toggleFavorite: (item: PokemonDetails) => void) {
   const router = useRouter();
   const lastTap = useRef<number>(0);
   const timer = useRef<NodeJS.Timeout | null>(null);
@@ -29,7 +31,7 @@ export function usePokedexInteractions(toggleFavorite: (item: any) => void) {
   }, [animatedValue]);
 
   const handlePokemonPress = useCallback(
-    (item: any) => {
+    (item: PokemonDetails) => {
       const now = Date.now();
       const DOUBLE_PRESS_DELAY = 300;
 
@@ -40,6 +42,7 @@ export function usePokedexInteractions(toggleFavorite: (item: any) => void) {
       } else {
         lastTap.current = now;
         timer.current = setTimeout(() => {
+          setCachedPokemonDetails(item);
           router.push(`/pokemon/${item.id}`);
         }, DOUBLE_PRESS_DELAY);
       }

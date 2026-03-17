@@ -116,6 +116,9 @@ const PhotoDetailSheet = forwardRef<BottomSheetModal, Props>(
             viewabilityConfig={{ viewAreaCoveragePercentThreshold: 60 }}
             contentContainerStyle={styles.flatListContent}
             style={styles.flatList}
+            initialNumToRender={2}
+            maxToRenderPerBatch={2}
+            windowSize={3}
           />
 
             <View style={styles.dotsRow}>
