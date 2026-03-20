@@ -1,0 +1,52 @@
+buildscript {
+  repositories {
+    mavenCentral()
+  }
+  dependencies {
+    classpath("org.jetbrains.kotlin.plugin.compose:org.jetbrains.kotlin.plugin.compose.gradle.plugin:${kotlinVersion}")
+  }
+}
+
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+apply plugin: 'org.jetbrains.kotlin.plugin.compose'
+
+group = 'expo.modules.animatedcounter'
+version = '1.0.0'
+
+def composeVersion = "1.9.0"
+def composeMaterialVersion = "1.4.0"
+
+dependencies {
+  implementation project(':expo-modules-core')
+  implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+
+  implementation "androidx.compose.ui:ui:$composeVersion"
+  implementation "androidx.compose.foundation:foundation:$composeVersion"
+  implementation "androidx.compose.animation:animation:$composeVersion"
+  implementation "androidx.compose.material3:material3:$composeMaterialVersion"
+  implementation "androidx.compose.ui:ui-text:$composeVersion"
+  implementation "androidx.compose.runtime:runtime:$composeVersion"
+}
+
+android {
+  namespace "expo.modules.animatedcounter"
+  compileSdk 36
+
+  defaultConfig {
+    minSdkVersion 26
+    versionCode 1
+    versionName "1.0.0"
+  }
+
+  buildFeatures {
+    compose true
+  }
+
+  lintOptions {
+    abortOnError false
+  }
+}
