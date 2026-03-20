@@ -6,18 +6,18 @@ export interface AnimatedCounterProps extends ViewProps {
   count: number;
 }
 
-const NativeView: React.ComponentType<AnimatedCounterProps> | null = 
-  Platform.OS === 'ios' 
-    ? requireNativeViewManager('AnimatedCounter') 
+const NativeView: React.ComponentType<AnimatedCounterProps> | null =
+  Platform.OS === 'ios' || Platform.OS === 'android'
+    ? requireNativeViewManager('AnimatedCounter')
     : null;
 
 export default function AnimatedCounterView({ count, style, ...props }: AnimatedCounterProps) {
-  if (Platform.OS === 'ios' && NativeView) {
+  if ((Platform.OS === 'ios' || Platform.OS === 'android') && NativeView) {
     return (
-      <NativeView 
-        {...props} 
-        count={count} 
-        style={[styles.baseSize, style]} 
+      <NativeView
+        {...props}
+        count={count}
+        style={[styles.baseSize, style]}
       />
     );
   }
