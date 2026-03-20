@@ -5,14 +5,19 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../src/context/ThemeContext';
 
 export default function SettingsScreen() {
-  const { setTheme, colors, isDark } = useTheme();
+  const { setThemePreference, colors, isDark, followSystem } = useTheme();
 
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
       edges={['top', 'left', 'right']}
     >
-      <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      <View
+        style={[
+          styles.section,
+          { backgroundColor: colors.card, borderColor: colors.border },
+        ]}
+      >
         <View style={styles.row}>
           <Ionicons
             name={isDark ? 'moon' : 'sunny'}
@@ -21,17 +26,56 @@ export default function SettingsScreen() {
             style={styles.rowIcon}
           />
           <Text style={[styles.rowLabel, { color: colors.text }]}>
-            Dark mode
+            Ciemny motyw
           </Text>
           <Switch
             value={isDark}
-            onValueChange={(value) => setTheme(value ? 'dark' : 'light')}
+            disabled={followSystem}
+            onValueChange={(value) =>
+              setThemePreference(value ? 'dark' : 'light')
+            }
             trackColor={{ false: '#ccc', true: '#3B4CCA' }}
             thumbColor="#fff"
           />
         </View>
         <Text style={[styles.rowHint, { color: colors.textSecondary }]}>
-          Use dark theme for the app
+          {followSystem
+            ? 'Wyłącz „Jak w systemie”, aby ustawić motyw ręcznie.'
+            : 'Wymusza jasny lub ciemny motyw w aplikacji.'}
+        </Text>
+      </View>
+
+      <View
+        style={[
+          styles.section,
+          { backgroundColor: colors.card, borderColor: colors.border },
+        ]}
+      >
+        <View style={styles.row}>
+          <Ionicons
+            name="phone-portrait-outline"
+            size={22}
+            color={colors.textSecondary}
+            style={styles.rowIcon}
+          />
+          <Text style={[styles.rowLabel, { color: colors.text }]}>
+            Motyw systemu
+          </Text>
+          <Switch
+            value={followSystem}
+            onValueChange={(on) => {
+              if (on) {
+                setThemePreference('system');
+              } else {
+                setThemePreference(isDark ? 'dark' : 'light');
+              }
+            }}
+            trackColor={{ false: '#ccc', true: '#3B4CCA' }}
+            thumbColor="#fff"
+          />
+        </View>
+        <Text style={[styles.rowHint, { color: colors.textSecondary }]}>
+          Motyw aplikacji podąża za ustawieniami telefonu.
         </Text>
       </View>
     </SafeAreaView>

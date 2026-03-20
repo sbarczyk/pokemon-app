@@ -2,11 +2,12 @@
   "expo": {
     "name": "SWM-pokemon-app",
     "slug": "SWM-pokemon-app",
+    "newArchEnabled": true,
     "version": "1.0.0",
     "orientation": "portrait",
     "scheme": "swm-pokemon-app",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -34,6 +35,8 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
+      "./plugins/withNativeTheme",
+      "expo-system-ui",
       "expo-router",
       "expo-font",
       [

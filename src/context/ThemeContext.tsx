@@ -1,9 +1,21 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  getSystemColorScheme,
+  subscribeSystemColorScheme,
+} from '../lib/nativeTheme';
 
 const THEME_STORAGE_KEY = '@app_theme';
 
 export type ThemeMode = 'light' | 'dark';
+export type ThemePreference = ThemeMode | 'system';
 
 export const themeColors = {
   light: {
@@ -25,37 +37,73 @@ export const themeColors = {
 };
 
 type ThemeContextType = {
+  /** Zapisany wybór użytkownika: jasny, ciemny lub zgodny z systemem (TurboModule / Appearance). */
+  themePreference: ThemePreference;
+  setThemePreference: (pref: ThemePreference) => void;
+  /** Rzeczywisty motyw UI po rozwiązaniu trybu systemowego. */
   theme: ThemeMode;
-  setTheme: (mode: ThemeMode) => void;
   colors: (typeof themeColors)['light'];
   isDark: boolean;
+  followSystem: boolean;
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+function parseStored(value: string | null): ThemePreference {
+  if (value === 'light' || value === 'dark' || value === 'system') return value;
+  return 'system';
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<ThemeMode>('light');
+  const [themePreference, setThemePreferenceState] =
+    useState<ThemePreference>('system');
+  const [systemScheme, setSystemScheme] = useState<'light' | 'dark'>(() =>
+    getSystemColorScheme(),
+  );
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     AsyncStorage.getItem(THEME_STORAGE_KEY).then((stored) => {
-      if (stored === 'light' || stored === 'dark') {
-        setThemeState(stored);
-      }
+      setThemePreferenceState(parseStored(stored));
+      setHydrated(true);
     });
   }, []);
 
-  const setTheme = (mode: ThemeMode) => {
-    setThemeState(mode);
-    AsyncStorage.setItem(THEME_STORAGE_KEY, mode);
-  };
+  const setThemePreference = useCallback((pref: ThemePreference) => {
+    setThemePreferenceState(pref);
+    AsyncStorage.setItem(THEME_STORAGE_KEY, pref);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated || themePreference !== 'system') return;
+    setSystemScheme(getSystemColorScheme());
+    const sub = subscribeSystemColorScheme(setSystemScheme);
+    return () => sub.remove();
+  }, [hydrated, themePreference]);
+
+  const theme: ThemeMode = useMemo(() => {
+    if (themePreference === 'system') return systemScheme;
+    return themePreference;
+  }, [themePreference, systemScheme]);
 
   const colors = themeColors[theme];
   const isDark = theme === 'dark';
+  const followSystem = themePreference === 'system';
+
+  const value = useMemo(
+    () => ({
+      themePreference,
+      setThemePreference,
+      theme,
+      colors,
+      isDark,
+      followSystem,
+    }),
+    [themePreference, setThemePreference, theme, colors, isDark, followSystem],
+  );
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, colors, isDark }}>
-      {children}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
   );
 }
 
