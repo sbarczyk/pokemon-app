@@ -41,4 +41,5 @@ yarn-error.*
 /ios
 /android
 .env
-.claude/
+/.claude/
+/modules/android/build/

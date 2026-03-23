@@ -1,22 +1,15 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import PokemonPin from "../types/pokemonPin";
+import { normalizePokemonFromApi } from '../utils/normalizePokemonFromApi';
 
 const STORAGE_KEY = 'pokemon_pins';
 
+/** Zapisujemy tylko pola używane w UI (zgodne z normalizePokemonFromApi). */
 const trimPin = (pin: PokemonPin): PokemonPin => ({
   id: pin.id,
   latitude: pin.latitude,
   longitude: pin.longitude,
-  pokemonDetails: {
-    id: pin.pokemonDetails.id,
-    name: pin.pokemonDetails.name,
-    sprites: {
-      front_default: pin.pokemonDetails.sprites.front_default,
-      other: pin.pokemonDetails.sprites.other,
-    },
-    types: pin.pokemonDetails.types,
-    stats: pin.pokemonDetails.stats,
-  },
+  pokemonDetails: normalizePokemonFromApi(pin.pokemonDetails),
 });
 
 export const savePokemonPinsToStorage = async (pins: PokemonPin[]) => {

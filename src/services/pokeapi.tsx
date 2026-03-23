@@ -1,4 +1,5 @@
 import { Pokemon, PokemonDetails } from '../types/pokemon';
+import { normalizePokemonFromApi } from '../utils/normalizePokemonFromApi';
 
 const BASE_URL = 'https://pokeapi.co/api/v2';
 
@@ -22,7 +23,8 @@ export async function getPokemonDetails(url: string): Promise<PokemonDetails> {
   if (!res.ok) {
     throw new Error(`Failed to fetch pokemon details: ${res.statusText}`);
   }
-  return res.json();
+  const raw = await res.json();
+  return normalizePokemonFromApi(raw);
 }
 
 export async function getPokemonDetailsById(
@@ -32,7 +34,8 @@ export async function getPokemonDetailsById(
   if (!res.ok) {
     throw new Error(`Failed to fetch pokemon details: ${res.statusText}`);
   }
-  return res.json();
+  const raw = await res.json();
+  return normalizePokemonFromApi(raw);
 }
 
 export async function getAllPokemonNames(): Promise<Pokemon[]> {
