@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { Marker } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,10 +16,14 @@ export default function SavedPhotoMarker({ photos, onPress }: SavedPhotoMarkerPr
   const first = photos[0];
   const count = photos.length;
 
+  const handlePress = useCallback(() => {
+    onPress(photos);
+  }, [onPress, photos]);
+
   return (
     <Marker
       coordinate={{ latitude: first.latitude, longitude: first.longitude }}
-      onPress={() => onPress(photos)}
+      onPress={handlePress}
       tracksViewChanges={false}
     >
       <View style={[styles.markerContainer, { backgroundColor: colors.card }]}>

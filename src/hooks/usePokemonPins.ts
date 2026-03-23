@@ -5,29 +5,27 @@ import PokemonPin from '../types/pokemonPin';
 
 export function usePokemonPins() {
   const [pokemonPins, setPokemonPins] = useState<PokemonPin[]>([]);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    getPokemonPinsFromStorage().then(setPokemonPins);
+    getPokemonPinsFromStorage().then((pins) => {
+      setPokemonPins(pins);
+      setHydrated(true);
+    });
   }, []);
 
-  const addPin = useCallback(
-    async (pin: PokemonPin) => {
-      const updatedPins = [...pokemonPins, pin];
-      setPokemonPins(updatedPins);
-      await savePokemonPinsToStorage(updatedPins);
-    },
-    [pokemonPins],
-  );
+  useEffect(() => {
+    if (!hydrated) return;
+    savePokemonPinsToStorage(pokemonPins).catch(console.error);
+  }, [pokemonPins, hydrated]);
 
-  const removePin = useCallback(
-    async (id: number) => {
-      const updatedPins = pokemonPins.filter((pin) => pin.id !== id);
-      setPokemonPins(updatedPins);
-      await savePokemonPinsToStorage(updatedPins);
-      return updatedPins;
-    },
-    [pokemonPins],
-  );
+  const addPin = useCallback((pin: PokemonPin) => {
+    setPokemonPins((prev) => [...prev, pin]);
+  }, []);
+
+  const removePin = useCallback((id: number) => {
+    setPokemonPins((prev) => prev.filter((p) => p.id !== id));
+  }, []);
 
   return {
     pokemonPins,

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useCallback, useEffect, useState } from 'react';
+import React, { createContext, useContext, useCallback, useEffect, useMemo, useState } from 'react';
 import { getSavedPhotosFromStorage, saveSavedPhotosToStorage, getCachedSavedPhotos } from '../services/savedPhotos';
 import { deletePhotoFromGallery } from '../services/mediaLibrary';
 import type { SavedPhoto } from '../types/savedPhoto';
@@ -44,11 +44,12 @@ export const PhotosProvider = ({ children }: { children: React.ReactNode }) => {
     });
   }, []);
 
-  return (
-    <PhotosContext.Provider value={{ savedPhotos, addPhoto, updatePhoto, removePhoto }}>
-      {children}
-    </PhotosContext.Provider>
+  const value = useMemo(
+    () => ({ savedPhotos, addPhoto, updatePhoto, removePhoto }),
+    [savedPhotos, addPhoto, updatePhoto, removePhoto],
   );
+
+  return <PhotosContext.Provider value={value}>{children}</PhotosContext.Provider>;
 };
 
 export const usePhotos = () => {

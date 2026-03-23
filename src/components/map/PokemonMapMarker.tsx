@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Image, StyleSheet, View, ActivityIndicator } from 'react-native';
+import { memo, useCallback, useState } from 'react';
+import { Image, StyleSheet, View } from 'react-native';
 import { Marker } from 'react-native-maps';
 
 import { useTheme } from '../../context/ThemeContext';
@@ -11,30 +11,46 @@ type PokemonMapMarkerProps = {
   onPress: (pin: PokemonPin) => void;
 };
 
-export default function PokemonMapMarker({ pin, onPress }: PokemonMapMarkerProps) {
+function PokemonMapMarker({ pin, onPress }: PokemonMapMarkerProps) {
   const { colors } = useTheme();
-  const [imageLoading, setImageLoading] = useState(true);
+  const [tracksViewChanges, setTracksViewChanges] = useState(true);
+  const imageUrl = getPokemonImageUrl(pin.pokemonDetails);
+
+  const handleImageLoaded = useCallback(() => {
+    setTracksViewChanges(false);
+  }, []);
 
   return (
     <Marker
       coordinate={{ latitude: pin.latitude, longitude: pin.longitude }}
       onPress={() => onPress(pin)}
+      tracksViewChanges={tracksViewChanges}
     >
       <View style={[styles.markerContainer, { backgroundColor: colors.card }]}>
-        {imageLoading && (
-          <View style={styles.loaderWrap}>
-            <ActivityIndicator size="small" color={colors.text} />
-          </View>
-        )}
         <Image
-          source={{ uri: getPokemonImageUrl(pin.pokemonDetails) }}
+          source={{ uri: imageUrl }}
           style={styles.pokemonMarkerImage}
-          onLoadEnd={() => setImageLoading(false)}
+          resizeMode="contain"
+          onLoad={handleImageLoaded}
+          onLoadEnd={handleImageLoaded}
+          onError={handleImageLoaded}
         />
       </View>
     </Marker>
   );
 }
+
+function propsEqual(prev: PokemonMapMarkerProps, next: PokemonMapMarkerProps) {
+  return (
+    prev.onPress === next.onPress &&
+    prev.pin.id === next.pin.id &&
+    prev.pin.latitude === next.pin.latitude &&
+    prev.pin.longitude === next.pin.longitude &&
+    prev.pin.pokemonDetails.id === next.pin.pokemonDetails.id
+  );
+}
+
+export default memo(PokemonMapMarker, propsEqual);
 
 const styles = StyleSheet.create({
   markerContainer: {
@@ -43,12 +59,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#3B4CCA',
     elevation: 4,
-    position: 'relative',
-  },
-  loaderWrap: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   pokemonMarkerImage: {
     width: 40,

@@ -1,30 +1,22 @@
-import { View, Text, StyleSheet, Alert } from 'react-native';
+import { View, StyleSheet, Alert } from 'react-native';
 import { useMemo, useRef, useState, useCallback } from 'react';
-import MapView, { LongPressEvent } from 'react-native-maps';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import ViewShot from 'react-native-view-shot';
 
 import FloatingActionButton from '../../src/components/common/FloatingActionButton';
-import FetchingPinOverlay from '../../src/components/map/FetchingPinOverlay';
-import MapBottomSheet, { MapBottomSheetProps } from '../../src/components/map/MapBottomSheet';
+import MapBottomSheet from '../../src/components/map/MapBottomSheet';
 import PhotoDetailSheet from '../../src/components/map/PhotoDetailSheet';
-import PokemonMapMarker from '../../src/components/map/PokemonMapMarker';
-import SavedPhotoMarker from '../../src/components/map/SavedPhotoMarker';
+import PokemonMapView from '../../src/components/map/PokemonMapView';
 import { useTheme } from '../../src/context/ThemeContext';
 import { usePhotos } from '../../src/context/PhotosContext';
-import { usePokemonPins } from '../../src/hooks/usePokemonPins';
 import { normalizeFilePathToUri, saveUriToGallery } from '../../src/services/mediaLibrary';
-import { getPokemonDetailsById } from '../../src/services/pokeapi';
 import PokemonPin from '../../src/types/pokemonPin';
 import type { SavedPhoto } from '../../src/types/savedPhoto';
-import AnimatedCounterView from '../../modules/animated-counter/src/AnimatedCounterView';
-
-const randomPokemonId = () => Math.floor(Math.random() * 1025) + 1;
 
 function groupPhotosByLocation(photos: SavedPhoto[]): { key: string; latitude: number; longitude: number; photos: SavedPhoto[] }[] {
   const map = new Map<string, SavedPhoto[]>();
-  
-  const validPhotos = photos.filter(p => p.latitude !== 0 && p.longitude !== 0);
+
+  const validPhotos = photos.filter((p) => p.latitude !== 0 && p.longitude !== 0);
 
   for (const p of validPhotos) {
     const key = `${p.latitude.toFixed(5)},${p.longitude.toFixed(5)}`;
@@ -40,59 +32,36 @@ function groupPhotosByLocation(photos: SavedPhoto[]): { key: string; latitude: n
 }
 
 const MAP_CAPTURE_DELAY_MS = 400;
-const INITIAL_REGION = {
-  latitude: 50.048659,
-  longitude: 19.96548,
-  latitudeDelta: 0.01,
-  longitudeDelta: 0.01,
-};
 
 export default function MapScreen() {
   const { colors } = useTheme();
   const captureRef = useRef<ViewShot>(null);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const photoSheetRef = useRef<BottomSheetModal>(null);
+  const removePinRef = useRef<(id: number) => void>(() => {});
 
-  const { savedPhotos, removePhoto } = usePhotos(); 
-  const { pokemonPins, addPin, removePin } = usePokemonPins();
+  const { savedPhotos, removePhoto } = usePhotos();
 
   const [selectedPin, setSelectedPin] = useState<PokemonPin | null>(null);
-  const [fetchingPin, setFetchingPin] = useState(false);
   const [isMapReady, setIsMapReady] = useState(false);
   const [selectedLocationKey, setSelectedLocationKey] = useState<string | null>(null);
+
+  const onExposeRemovePin = useCallback((removePin: (id: number) => void) => {
+    removePinRef.current = removePin;
+  }, []);
+
+  const handleMapReady = useCallback(() => {
+    setIsMapReady(true);
+  }, []);
 
   const snapPoints = useMemo(() => ['62%', '90%'], []);
 
   const photoGroups = useMemo(() => groupPhotosByLocation(savedPhotos), [savedPhotos]);
-  
+
   const selectedPhotosForSheet = useMemo(
     () => photoGroups.find((g) => g.key === selectedLocationKey)?.photos ?? null,
     [photoGroups, selectedLocationKey],
   );
-
-  const markerCount = useMemo(
-    () => pokemonPins.length + photoGroups.length,
-    [pokemonPins.length, photoGroups.length],
-  );
-
-  const handleLongPress = async (event: LongPressEvent) => {
-    const { coordinate } = event.nativeEvent;
-    setFetchingPin(true);
-    try {
-      const details = await getPokemonDetailsById(randomPokemonId());
-      const newPin: PokemonPin = {
-        id: Date.now(),
-        latitude: coordinate.latitude,
-        longitude: coordinate.longitude,
-        pokemonDetails: details,
-      };
-      await addPin(newPin);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setFetchingPin(false);
-    }
-  };
 
   const handleMarkerPress = useCallback((pin: PokemonPin) => {
     setSelectedPin(pin);
@@ -108,9 +77,9 @@ export default function MapScreen() {
   const handleRemovePhoto = useCallback(
     async (id: number, galleryUri?: string) => {
       const remainingInGroup = selectedPhotosForSheet?.length ?? 0;
-      
+
       await removePhoto(id, galleryUri);
-      
+
       if (remainingInGroup <= 1) {
         photoSheetRef.current?.dismiss();
         setSelectedLocationKey(null);
@@ -119,8 +88,8 @@ export default function MapScreen() {
     [removePhoto, selectedPhotosForSheet],
   );
 
-  const handleUnpin = async (id: number) => {
-    await removePin(id);
+  const handleUnpin = (id: number) => {
+    removePinRef.current(id);
     bottomSheetRef.current?.close();
   };
 
@@ -137,7 +106,7 @@ export default function MapScreen() {
       await new Promise((resolve) => setTimeout(resolve, MAP_CAPTURE_DELAY_MS));
       const snapshotUri = await captureRef.current?.capture?.();
 
-      if (!snapshotUri) throw new Error("Capture failed");
+      if (!snapshotUri) throw new Error('Capture failed');
 
       const saved = await saveUriToGallery(normalizeFilePathToUri(snapshotUri));
       if (!saved) {
@@ -152,43 +121,16 @@ export default function MapScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <ViewShot
-        ref={captureRef}
-        style={styles.mapCapture}
-        options={{ format: 'png', quality: 1, result: 'tmpfile' }}
-      >
-        <MapView
-          style={styles.map}
-          onLongPress={handleLongPress}
-          onMapReady={() => setIsMapReady(true)}
-          initialRegion={INITIAL_REGION}
-        >
-          {pokemonPins.map((pin) => (
-            <PokemonMapMarker key={pin.id} pin={pin} onPress={handleMarkerPress} />
-          ))}
-
-          {photoGroups.map((group) => (
-            <SavedPhotoMarker
-              key={group.key}
-              photos={group.photos}
-              onPress={() => handlePhotoMarkerPress(group.photos)}
-            />
-          ))}
-        </MapView>
-      </ViewShot>
-
-      <FloatingActionButton 
-        label="Save map" 
-        onPress={handleSaveMap} 
-        position="topRight" 
+      <PokemonMapView
+        captureRef={captureRef}
+        onMapReady={handleMapReady}
+        onExposeRemovePin={onExposeRemovePin}
+        onPokemonMarkerPress={handleMarkerPress}
+        photoGroups={photoGroups}
+        onSavedPhotoMarkerPress={handlePhotoMarkerPress}
       />
 
-      <View style={[styles.counterContainer, { backgroundColor: colors.card }]}>
-        <Text style={[styles.counterText, { color: colors.text }]}>
-          Aktualna liczba pinów:{' '}
-        </Text>
-        <AnimatedCounterView count={markerCount} style={styles.counterValue} />
-      </View>
+      <FloatingActionButton label="Save map" onPress={handleSaveMap} position="topRight" />
 
       <MapBottomSheet
         ref={bottomSheetRef}
@@ -203,40 +145,10 @@ export default function MapScreen() {
         photos={selectedPhotosForSheet}
         onRemove={handleRemovePhoto}
       />
-
-      {fetchingPin && <FetchingPinOverlay />}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  mapCapture: { flex: 1 },
-  map: { flex: 1 },
-  counterContainer: {
-    position: 'absolute',
-    top: 53,
-    left: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
-    zIndex: 1000,
-    gap: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  counterText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  counterValue: {
-    minWidth: 40,
-    width: 36,
-    height: 24,
-  },
 });
